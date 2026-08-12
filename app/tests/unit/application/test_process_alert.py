@@ -19,28 +19,32 @@ class FakeNotifier:
         self.payloads.append(payload)
 
 
-class FakeDuplicateChecker:
-    def __init__(self, *, duplicate: bool = False) -> None:
-        self.duplicate = duplicate
-        self.calls: list[dict[str, Any]] = []
+class FakeDispatchLedger:
+    def __init__(self, *, claim: bool = True) -> None:
+        self.claim = claim
+        self.claims: list[dict[str, Any]] = []
+        self.releases: list[int] = []
 
-    def is_duplicate(
+    def try_claim(
         self,
         *,
+        ticket_id: int,
         title: str,
         queue_name: str,
         window_minutes: int,
-        exclude_ticket_id: int,
     ) -> bool:
-        self.calls.append(
+        self.claims.append(
             {
+                "ticket_id": ticket_id,
                 "title": title,
                 "queue_name": queue_name,
                 "window_minutes": window_minutes,
-                "exclude_ticket_id": exclude_ticket_id,
             }
         )
-        return self.duplicate
+        return self.claim
+
+    def release(self, *, ticket_id: int) -> None:
+        self.releases.append(ticket_id)
 
 
 def test_process_alert_sends_formatted_payload() -> None:
@@ -76,12 +80,12 @@ def test_process_alert_propagates_notifier_failure() -> None:
         use_case.execute(ticket)
 
 
-def test_should_skip_alert_when_duplicate_detected() -> None:
+def test_should_skip_alert_when_claim_rejected() -> None:
     notifier = FakeNotifier()
-    dedup = FakeDuplicateChecker(duplicate=True)
+    ledger = FakeDispatchLedger(claim=False)
     use_case = ProcessAlertUseCase(
         notifier=notifier,
-        duplicate_checker=dedup,
+        dispatch_ledger=ledger,
         dedup_window_minutes=30,
     )
     ticket = Ticket(
@@ -95,20 +99,21 @@ def test_should_skip_alert_when_duplicate_detected() -> None:
 
     assert result is ProcessAlertResult.SKIPPED_DUPLICATE
     assert notifier.payloads == []
-    assert dedup.calls == [
+    assert ledger.claims == [
         {
+            "ticket_id": 10,
             "title": "CPU Alta em SRV-01",
             "queue_name": "CloudTeam",
             "window_minutes": 30,
-            "exclude_ticket_id": 10,
         }
     ]
+    assert ledger.releases == []
 
 
-def test_process_alert_sends_when_not_duplicate() -> None:
+def test_process_alert_sends_when_claim_accepted() -> None:
     notifier = FakeNotifier()
-    dedup = FakeDuplicateChecker(duplicate=False)
-    use_case = ProcessAlertUseCase(notifier=notifier, duplicate_checker=dedup)
+    ledger = FakeDispatchLedger(claim=True)
+    use_case = ProcessAlertUseCase(notifier=notifier, dispatch_ledger=ledger)
     ticket = Ticket(
         ticket_id=10,
         ticket_number="20260812000010",
@@ -120,4 +125,22 @@ def test_process_alert_sends_when_not_duplicate() -> None:
 
     assert result is ProcessAlertResult.SENT
     assert len(notifier.payloads) == 1
-    assert len(dedup.calls) == 1
+    assert len(ledger.claims) == 1
+    assert ledger.releases == []
+
+
+def test_process_alert_releases_claim_when_notifier_fails() -> None:
+    notifier = FakeNotifier(fail=True)
+    ledger = FakeDispatchLedger(claim=True)
+    use_case = ProcessAlertUseCase(notifier=notifier, dispatch_ledger=ledger)
+    ticket = Ticket(
+        ticket_id=10,
+        ticket_number="20260812000010",
+        title="CPU Alta em SRV-01",
+        queue="CloudTeam",
+    )
+
+    with pytest.raises(RuntimeError, match="webhook unavailable"):
+        use_case.execute(ticket)
+
+    assert ledger.releases == [10]

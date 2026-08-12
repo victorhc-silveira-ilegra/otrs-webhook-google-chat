@@ -16,10 +16,10 @@ Guia de engenharia do servico `otrs-gchat-alert` (camadas, qualidade, config e r
 2. `Settings.from_env()` carrega `.env` (salvo `OTRS_DISABLE_DOTENV`)
 3. Setup de logging (`LOG_LEVEL` / `LOG_FORMAT` / `LOG_FILE`)
 4. Emite `alert.run.started`
-5. Opcionalmente monta `OTRSDatabaseDuplicateChecker`
+5. Opcionalmente monta `OTRSDatabaseAlertDispatchLedger`
 6. `ProcessAlertUseCase.execute(ticket)`:
-   - se duplicata → `skipped_duplicate`
-   - senao formata texto + `NotifierPort.send`
+   - `try_claim` rejeitado → `skipped_duplicate`
+   - senao formata texto + `NotifierPort.send` (release do claim se o envio falhar)
 7. CLI emite `skipped_duplicate` ou `finished` / `failed`
 
 ## Ports e adapters
@@ -27,7 +27,7 @@ Guia de engenharia do servico `otrs-gchat-alert` (camadas, qualidade, config e r
 | Port | Adapter | Notas |
 |------|---------|--------|
 | `NotifierPort` | `GoogleChatWebhookAdapter` | `httpx`; redact de query no log |
-| `DuplicateCheckerPort` | `OTRSDatabaseDuplicateChecker` | PyMySQL; fail-open |
+| `AlertDispatchLedgerPort` | `OTRSDatabaseAlertDispatchLedger` | INSERT atomico; IntegrityError = skip; fail-open em erro de conexao |
 
 Ports sao `typing.Protocol` (sem ABC).
 
@@ -69,7 +69,7 @@ app/tests/
 
 `conftest.py` define `OTRS_DISABLE_DOTENV=1` para isolar testes do `.env` local.
 
-Fakes/Mocks: `FakeNotifier`, `FakeDuplicateChecker`, `httpx` transport, `pymysql.connect` patchado.
+Fakes/Mocks: `FakeNotifier`, `FakeDispatchLedger`, `httpx` transport, `pymysql.connect` patchado.
 
 ## Config e segredos
 

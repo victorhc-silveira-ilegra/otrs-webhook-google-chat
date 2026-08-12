@@ -11,8 +11,8 @@ from infrastructure.adapters.google_chat_webhook import (
     GoogleChatWebhookAdapter,
     WebhookDeliveryError,
 )
-from infrastructure.adapters.otrs_db_duplicate_checker import (
-    OTRSDatabaseDuplicateChecker,
+from infrastructure.adapters.otrs_db_alert_dispatch_ledger import (
+    OTRSDatabaseAlertDispatchLedger,
 )
 from infrastructure.config.settings import Settings
 from infrastructure.logging import (
@@ -71,13 +71,13 @@ def run(argv: Sequence[str] | None = None) -> int:
             timeout_seconds=settings.http_timeout_seconds,
             ticket_id=ticket.ticket_id,
         )
-        duplicate_checker = None
+        dispatch_ledger = None
         if settings.dedup_enabled and settings.otrs_db_ready():
-            duplicate_checker = OTRSDatabaseDuplicateChecker(settings.otrs_db_config())
+            dispatch_ledger = OTRSDatabaseAlertDispatchLedger(settings.otrs_db_config())
         result = ProcessAlertUseCase(
             notifier=adapter,
             formatter=AlertMessageFormatter(otrs_base_url=settings.otrs_base_url),
-            duplicate_checker=duplicate_checker,
+            dispatch_ledger=dispatch_ledger,
             dedup_window_minutes=settings.dedup_window_minutes,
         ).execute(ticket)
         if result is ProcessAlertResult.SKIPPED_DUPLICATE:

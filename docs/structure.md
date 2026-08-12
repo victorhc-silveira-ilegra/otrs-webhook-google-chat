@@ -12,12 +12,12 @@ Layout operacional da PoC OTRS (`app/`, `infra/`, `linters/`, `docs/`).
 │   │   ├── application/
 │   │   │   ├── ports/
 │   │   │   │   ├── notifier.py
-│   │   │   │   └── duplicate_checker.py
+│   │   │   │   └── alert_dispatch_ledger.py
 │   │   │   └── use_cases/process_alert.py
 │   │   ├── infrastructure/
 │   │   │   ├── adapters/
 │   │   │   │   ├── google_chat_webhook.py
-│   │   │   │   └── otrs_db_duplicate_checker.py
+│   │   │   │   └── otrs_db_alert_dispatch_ledger.py
 │   │   │   ├── config/
 │   │   │   │   ├── settings.py
 │   │   │   │   └── dotenv_loader.py

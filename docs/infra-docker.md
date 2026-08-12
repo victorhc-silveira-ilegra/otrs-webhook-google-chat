@@ -7,7 +7,7 @@ Stack local da PoC OTRS → Google Chat (notifier Python + MariaDB + WireMock + 
 | Servico | Porta | Papel |
 |---------|-------|--------|
 | `otrs` | 8081 | OTRS 3.2.1 (CentOS 7 + Apache + Perl); Event Module chama a CLI |
-| `mariadb` | 3306 | Banco (schema minimo `init.sql` + dedup) |
+| `mariadb` | 3306 | Banco (schema minimo `init.sql` + ledger de dispatch) |
 | `mock-webhook` | 8080 | WireMock (opcional; PoC pode usar webhook real via `.env`) |
 | `notifier` | - | Imagem Python com `otrs-gchat-alert` |
 
@@ -24,7 +24,7 @@ make docker-clean
 
 - `docker-clean` e destrutivo (remove volumes, MariaDB incluso).
 - `docker-rebuild` refaz build e recria containers.
-- `docker-smoke` espera tabelas `ticket`/`queue` (`infra/docker/scripts/wait-for-otrs-schema.sh`) e executa a CLI no `notifier`.
+- `docker-smoke` espera schema (`ticket`/`queue`/`gchat_alert_dispatch`) e valida envio + idempotencia + race no WireMock (`infra/docker/scripts/docker-smoke.sh`), forcando `WEBHOOK_URL` mock via `OTRS_DISABLE_DOTENV=1`.
 
 Se o schema nao aparecer: `make docker-clean && make docker-up`.
 
@@ -32,11 +32,11 @@ Se o schema nao aparecer: `make docker-clean && make docker-up`.
 
 `infra/docker/mariadb/init.sql` (montado em `/docker-entrypoint-initdb.d/`):
 
-- cria `queue` e `ticket` minimos para dedup
+- cria `queue` e `ticket` minimos
+- cria `gchat_alert_dispatch` (PK `ticket_id`, UNIQUE `dedup_hash`)
 - seed das filas `Raw` e `CloudTeam`
 
-Quando a imagem OTRS traz `/opt/otrs/scripts/database/*.sql`, o `docker-entrypoint.sh` pode aplicar o schema oficial (substituindo o minimo se necessario).
-
+Volumes ja existentes: `wait-for-otrs-schema.sh` aplica `CREATE TABLE IF NOT EXISTS` do ledger.
 ## Event Module
 
 - `infra/docker/otrs/Kernel/System/Ticket/Event/GoogleChatAlert.pm`

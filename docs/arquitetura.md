@@ -17,10 +17,10 @@ CLI otrs-gchat-alert  (presentation/cli)  <-- composition root
 ProcessAlertUseCase   (application)
    |            |                |
    v            v                v
-Ticket +   DuplicateCheckerPort  NotifierPort
+Ticket +   AlertDispatchLedgerPort  NotifierPort
 Formatter         |                   |
                   v                   v
-        OTRSDatabaseDuplicateChecker  GoogleChatWebhookAdapter
+   OTRSDatabaseAlertDispatchLedger  GoogleChatWebhookAdapter
                   |                   |
                   v                   v
               MariaDB            WireMock / Google Chat
@@ -42,13 +42,13 @@ O dominio **nao** loga e **nao** conhece httpx, PyMySQL nem arquivos `.env`.
 | Modulo | Papel |
 |--------|--------|
 | `ports/notifier.py` | `NotifierPort.send(payload)` |
-| `ports/duplicate_checker.py` | `DuplicateCheckerPort.is_duplicate(...)` |
-| `use_cases/process_alert.py` | Orquestra dedup opcional → format → send |
+| `ports/alert_dispatch_ledger.py` | `try_claim` / `release` (idempotencia + dedup) |
+| `use_cases/process_alert.py` | Orquestra claim opcional → format → send (release se falhar) |
 
 `ProcessAlertResult` (`StrEnum`):
 
 - `sent` — alerta despachado
-- `skipped_duplicate` — dedup bloqueou o envio (exit CLI `0`)
+- `skipped_duplicate` — claim rejeitado (exit CLI `0`)
 
 O use case **nao** loga; a presentation interpreta o resultado.
 
@@ -59,7 +59,7 @@ O use case **nao** loga; a presentation interpreta o resultado.
 | `config/settings.py` | `Settings.from_env()` — le `.env` + ambiente |
 | `config/dotenv_loader.py` | Carrega `.env` da raiz (`override=True` em runtime) |
 | `adapters/google_chat_webhook.py` | POST JSON via `httpx`; `WebhookDeliveryError` |
-| `adapters/otrs_db_duplicate_checker.py` | SQL no MariaDB; fail-open em erro |
+| `adapters/otrs_db_alert_dispatch_ledger.py` | INSERT atomico em `gchat_alert_dispatch` |
 | `logging/*` | `log_event`, constantes de evento, redact |
 
 ### Presentation (`app/src/presentation`)
@@ -73,18 +73,19 @@ CLI: `--ticket-id`, `--ticket-number`, `--title`, `--queue`.
 
 Exit codes: `0` (sent ou skipped_duplicate), `1` (validacao / config / entrega).
 
-## Deduplicacao
+## Deduplicacao e race
 
-Gate na CLI: instancia `OTRSDatabaseDuplicateChecker` somente se `DEDUP_ENABLED` **e** `Settings.otrs_db_ready()`.
+Gate na CLI: instancia `OTRSDatabaseAlertDispatchLedger` somente se `DEDUP_ENABLED` **e** `Settings.otrs_db_ready()`.
 
-Consulta (simplificada):
+Tabela `gchat_alert_dispatch`:
 
-- mesmo `title` + mesma fila (`queue.name`)
-- `create_time` dentro de `DEDUP_WINDOW_MINUTES`
-- exclui o ticket atual (`id <> exclude_ticket_id`)
-- estados abertos: `ticket_state_id IN (1, 4)`
+- `PRIMARY KEY (ticket_id)` — idempotencia do mesmo ticket
+- `UNIQUE (dedup_hash)` — `sha256(queue + NUL + title)` na janela
+- `DELETE` de linhas com `created_at` anterior a `DEDUP_WINDOW_MINUTES` antes do INSERT
 
-Fail-open: qualquer falha de DB gera `alert.dedup.check_failed` (WARNING) e **permite** o envio.
+Fluxo: `try_claim` → se falhar (IntegrityError) → `skipped_duplicate`; se OK → envia webhook; se o webhook falhar → `release(ticket_id)` para permitir retry.
+
+Fail-open: erro inesperado de DB no claim gera `alert.dispatch.claim_failed` (WARNING) e **permite** o envio.
 
 ## Contrato do webhook
 

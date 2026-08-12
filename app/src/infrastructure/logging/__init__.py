@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from infrastructure.logging.emit import log_event
 from infrastructure.logging.events import (
-    ALERT_DEDUP_CHECK_FAILED,
+    ALERT_DISPATCH_CLAIM_FAILED,
     ALERT_RUN_FAILED,
     ALERT_RUN_FINISHED,
     ALERT_RUN_SKIPPED_DUPLICATE,
@@ -13,7 +13,7 @@ from infrastructure.logging.events import (
 from infrastructure.logging.redact import redact_webhook_url, truncate_preview
 
 __all__ = [
-    "ALERT_DEDUP_CHECK_FAILED",
+    "ALERT_DISPATCH_CLAIM_FAILED",
     "ALERT_RUN_FAILED",
     "ALERT_RUN_FINISHED",
     "ALERT_RUN_SKIPPED_DUPLICATE",

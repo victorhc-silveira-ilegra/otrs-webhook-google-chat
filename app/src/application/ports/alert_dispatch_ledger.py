@@ -3,12 +3,14 @@ from __future__ import annotations
 from typing import Protocol
 
 
-class DuplicateCheckerPort(Protocol):
-    def is_duplicate(
+class AlertDispatchLedgerPort(Protocol):
+    def try_claim(
         self,
         *,
+        ticket_id: int,
         title: str,
         queue_name: str,
         window_minutes: int,
-        exclude_ticket_id: int,
     ) -> bool: ...
+
+    def release(self, *, ticket_id: int) -> None: ...

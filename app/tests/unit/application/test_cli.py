@@ -123,25 +123,28 @@ def test_run_skips_duplicate(
     )
 
 
-def test_run_wires_duplicate_checker_when_enabled(
+def test_run_wires_dispatch_ledger_when_enabled(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     captured: dict[str, Any] = {}
 
     class CapturingUseCase:
         def __init__(self, *args: Any, **kwargs: Any) -> None:
-            captured["duplicate_checker"] = kwargs.get("duplicate_checker")
+            captured["dispatch_ledger"] = kwargs.get("dispatch_ledger")
             captured["dedup_window_minutes"] = kwargs.get("dedup_window_minutes")
 
         def execute(self, ticket: Any) -> ProcessAlertResult:
             return ProcessAlertResult.SENT
 
-    class FakeDedup:
+    class FakeLedger:
         def __init__(self, db_config: dict[str, str | int]) -> None:
             captured["db_config"] = db_config
 
-        def is_duplicate(self, **kwargs: Any) -> bool:
-            return False
+        def try_claim(self, **kwargs: Any) -> bool:
+            return True
+
+        def release(self, **kwargs: Any) -> None:
+            return None
 
     monkeypatch.setenv("WEBHOOK_URL", "http://mock-webhook:8080/hook")
     monkeypatch.setenv("DEDUP_ENABLED", "true")
@@ -156,15 +159,15 @@ def test_run_wires_duplicate_checker_when_enabled(
         lambda *args, **kwargs: object(),
     )
     monkeypatch.setattr(
-        "presentation.cli.main.OTRSDatabaseDuplicateChecker",
-        FakeDedup,
+        "presentation.cli.main.OTRSDatabaseAlertDispatchLedger",
+        FakeLedger,
     )
     monkeypatch.setattr("presentation.cli.main.ProcessAlertUseCase", CapturingUseCase)
 
     code = run(_cli_args())
 
     assert code == 0
-    assert captured["duplicate_checker"] is not None
+    assert captured["dispatch_ledger"] is not None
     assert captured["dedup_window_minutes"] == 15
     assert captured["db_config"]["host"] == "mariadb"
 

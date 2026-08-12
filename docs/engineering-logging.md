@@ -13,7 +13,7 @@ Constantes em `infrastructure/logging/events.py`.
 |--------|-------|--------|
 | `alert.run.started` | INFO | CLI |
 | `alert.run.skipped_duplicate` | INFO | CLI |
-| `alert.dedup.check_failed` | WARNING | `OTRSDatabaseDuplicateChecker` (fail-open) |
+| `alert.dispatch.claim_failed` | WARNING | `OTRSDatabaseAlertDispatchLedger` (fail-open) |
 | `alert.webhook.sent` | INFO | `GoogleChatWebhookAdapter` |
 | `alert.webhook.failed` | ERROR | `GoogleChatWebhookAdapter` |
 | `alert.run.finished` | INFO | CLI |
@@ -23,8 +23,8 @@ Caminhos tipicos:
 
 - Sucesso: `started` → `webhook.sent` → `finished` (3 linhas INFO)
 - Skip duplicata: `started` → `skipped_duplicate` (sem webhook / sem `finished`)
-- Fail-open dedup: `started` → `dedup.check_failed` → `webhook.sent` → `finished`
-- Falha entrega: `started` → `webhook.failed` → `run.failed`
+- Fail-open claim: `started` → `dispatch.claim_failed` → `webhook.sent` → `finished`
+- Falha entrega: `started` → `webhook.failed` → `run.failed` (claim liberado)
 
 ## Variaveis
 

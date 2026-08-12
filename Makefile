@@ -112,9 +112,4 @@ docker-logs:
 	$(DOCKER_COMPOSE) logs --tail=$(DOCKER_LOGS_TAIL) $(if $(F),-f,) $(DOCKER_SERVICE)
 
 docker-smoke:
-	@curl -sf http://localhost:8080/health >/dev/null
-	@curl -sf http://localhost:8080/__admin/mappings >/dev/null
-	@bash infra/docker/scripts/wait-for-otrs-schema.sh
-	@$(DOCKER_COMPOSE) exec -T notifier otrs-gchat-alert --ticket-id 1 --ticket-number 20260812000001 --title "smoke" --queue "Raw"
-	@curl -sf http://localhost:8080/__admin/requests >/dev/null
-	@echo "[OK] docker-smoke"
+	@bash infra/docker/scripts/docker-smoke.sh

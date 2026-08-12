@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Logging
 
-- Eventos permitidos: `alert.run.started`, `alert.run.finished`, `alert.run.failed`, `alert.webhook.sent`, `alert.webhook.failed`.
+- Eventos permitidos: `alert.run.started`, `alert.run.finished`, `alert.run.failed`, `alert.run.skipped_duplicate`, `alert.dispatch.claim_failed`, `alert.webhook.sent`, `alert.webhook.failed`.
 - Nao dump de payload JSON nem body HTTP em INFO.
 - Nao logar `WEBHOOK_URL` crua; usar `redact_webhook_url`.
 - Dominio e use case nao emitem logs.
