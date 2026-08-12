@@ -1,6 +1,6 @@
 # Estrutura do repositorio
 
-Layout operacional inspirado no padrao Aether, adaptado a PoC OTRS.
+Layout operacional da PoC OTRS (`app/`, `infra/`, `linters/`, `docs/`).
 
 ```text
 .

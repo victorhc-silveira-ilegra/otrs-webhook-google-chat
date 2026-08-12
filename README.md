@@ -2,7 +2,7 @@
 
 PoC de integracao de alertas entre **OTRS 3.2.1** e **Google Chat**, com servico Python em arquitetura hexagonal / DDD, TDD e stack Docker legada (CentOS 7, Apache, Perl 5.16, MariaDB).
 
-Layout operacional no padrao Aether adaptado (`app/`, `Makefile`, `clean_workspace`, `linters/`).
+Layout operacional com `app/`, `Makefile`, `clean_workspace` e `linters/`.
 
 ## Documentacao
 
@@ -81,7 +81,7 @@ Detalhes em [docs/infra-docker.md](docs/infra-docker.md).
 
 ## CI
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) segue o padrao Aether:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml):
 
 - jobs paralelos: lint, test, security (actions compostas)
 - job `release` (semantic-release) apos qualidade em `main`
