@@ -32,7 +32,7 @@ services:
       - "8080:8080"
     volumes:
       - ./wiremock:/home/wiremock
-    command: ["--global-response-templating", "--verbose"]
+    command: ["--disable-banner", "--global-response-templating"]
 
   notifier:
     build:

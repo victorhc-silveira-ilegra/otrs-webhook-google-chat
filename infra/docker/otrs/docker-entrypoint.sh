@@ -20,7 +20,8 @@ if [[ -f "${CONFIG_PM}" ]]; then
 fi
 
 for _ in $(seq 1 60); do
-  if mysqladmin ping -h"${DB_HOST}" -P"${DB_PORT}" -u"${DB_USER}" -p"${DB_PASSWORD}" --silent; then
+  if mysqladmin ping -h"${DB_HOST}" -P"${DB_PORT}" -u"${DB_USER}" -p"${DB_PASSWORD}" --silent >/dev/null 2>&1; then
+    echo "OTRS ready: MariaDB acessivel em ${DB_HOST}:${DB_PORT}"
     break
   fi
   sleep 2
@@ -59,4 +60,5 @@ if [[ ! -f /opt/otrs/var/.db_initialized ]]; then
   touch /opt/otrs/var/.db_initialized
 fi
 
+echo "OTRS ready: schema ok, iniciando Apache"
 exec "$@"

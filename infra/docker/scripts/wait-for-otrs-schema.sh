@@ -2,7 +2,12 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-COMPOSE=(docker compose -f "${ROOT_DIR}/infra/docker/docker-compose.yml" --project-directory "${ROOT_DIR}/infra/docker")
+COMPOSE=(
+  docker compose
+  --env-file "${ROOT_DIR}/.env"
+  -f "${ROOT_DIR}/infra/docker/docker-compose.yml"
+  --project-directory "${ROOT_DIR}/infra/docker"
+)
 DB_USER="${OTRS_DB_USER:-otrs}"
 DB_PASSWORD="${OTRS_DB_PASSWORD:-otrssecret}"
 DB_NAME="${OTRS_DB_NAME:-otrs}"

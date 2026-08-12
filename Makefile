@@ -2,7 +2,8 @@ SHELL := /bin/bash
 APP_DIR=app
 DOCKER_DIR=infra/docker
 DOCKER_COMPOSE=docker compose --env-file .env -f $(DOCKER_DIR)/docker-compose.yml --project-directory $(DOCKER_DIR)
-DOCKER_LOGS_TAIL ?= all
+DOCKER_LOGS_TAIL ?= 200
+DOCKER_LOGS_SERVICES ?= otrs notifier
 
 RESOLVE_PY := $(shell bash linters/git-hooks/bin/resolve_venv_python.sh 2>/dev/null || echo python3)
 PYTHON := $(RESOLVE_PY)
@@ -46,8 +47,8 @@ help:
 	@echo -e "  $(GREEN)docker-clean$(RESET)       - $(RED)DESTRUTIVO$(RESET): remove containers, redes e volumes"
 	@echo -e "  $(GREEN)docker-restart$(RESET)     - Restart da stack"
 	@echo -e "  $(GREEN)docker-ps$(RESET)          - Status"
-	@echo -e "  $(GREEN)docker-logs$(RESET)        - Logs (DOCKER_SERVICE=... F=1)"
-	@echo -e "  $(GREEN)docker-smoke$(RESET)       - Smoke WireMock + notifier"
+	@echo -e "  $(GREEN)docker-logs$(RESET)        - Logs (DOCKER_SERVICE=... ou DOCKER_LOGS_SERVICES; F=1)"
+	@echo -e "  $(GREEN)docker-smoke$(RESET)       - Smoke real via .env (idempotencia + race no ledger)"
 	@echo -e "$(BLUE)========================================================================$(RESET)"
 
 app-install:
@@ -109,7 +110,7 @@ docker-ps:
 	$(DOCKER_COMPOSE) ps
 
 docker-logs:
-	$(DOCKER_COMPOSE) logs --tail=$(DOCKER_LOGS_TAIL) $(if $(F),-f,) $(DOCKER_SERVICE)
+	$(DOCKER_COMPOSE) logs --timestamps --tail=$(DOCKER_LOGS_TAIL) $(if $(F),-f,) $(if $(DOCKER_SERVICE),$(DOCKER_SERVICE),$(DOCKER_LOGS_SERVICES))
 
 docker-smoke:
 	@bash infra/docker/scripts/docker-smoke.sh

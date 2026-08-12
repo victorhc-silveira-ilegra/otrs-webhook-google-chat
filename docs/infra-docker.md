@@ -24,7 +24,10 @@ make docker-clean
 
 - `docker-clean` e destrutivo (remove volumes, MariaDB incluso).
 - `docker-rebuild` refaz build e recria containers.
-- `docker-smoke` espera schema (`ticket`/`queue`/`gchat_alert_dispatch`) e valida envio + idempotencia + race no WireMock (`infra/docker/scripts/docker-smoke.sh`), forcando `WEBHOOK_URL` mock via `OTRS_DISABLE_DOTENV=1`.
+- `docker-smoke` espera schema (`ticket`/`queue`/`gchat_alert_dispatch`) e valida envio real via `.env` + idempotencia + race no ledger MariaDB (`infra/docker/scripts/docker-smoke.sh`).
+- `docker-logs` mostra as ultimas `200` linhas de `otrs` e `notifier` por padrao (`DOCKER_LOGS_SERVICES`; use `DOCKER_SERVICE=mariadb` ou `mock-webhook` quando precisar; `F=1` para follow).
+- Apos o rebuild, espere linhas `OTRS ready` / `notifier ready`. Validacao do alerta continua em `make docker-smoke` (eventos da CLI aparecem no terminal do smoke, nao no log idle do notifier).
+- WireMock continua na stack como mock opcional; com `WEBHOOK_URL` real no `.env`, o smoke nao depende dele.
 
 Se o schema nao aparecer: `make docker-clean && make docker-up`.
 
