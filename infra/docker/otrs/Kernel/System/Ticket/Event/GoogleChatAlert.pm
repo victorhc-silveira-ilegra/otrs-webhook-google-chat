@@ -24,6 +24,12 @@ sub Run {
 
     return 1 if !%Ticket;
 
+    my $ConfiguredQueue = $Param{Config}->{Queue} // '';
+    if ( $ConfiguredQueue ne '' ) {
+        my $TicketQueue = $Ticket{Queue} // '';
+        return 1 if $TicketQueue ne $ConfiguredQueue;
+    }
+
     my $Bin = $ENV{NOTIFIER_BIN} || '/opt/notifier/bin/otrs-gchat-alert';
     my @Cmd = (
         $Bin,

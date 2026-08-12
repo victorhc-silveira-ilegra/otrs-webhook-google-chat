@@ -55,35 +55,34 @@ ENV OTRS_VERSION=3.2.1
 WORKDIR /opt
 
 RUN set -e; \
-    if wget -O "otrs-${OTRS_VERSION}.tar.gz" "https://ftp.otrs.org/pub/otrs/otrs-${OTRS_VERSION}.tar.gz" \
-      && test -s "otrs-${OTRS_VERSION}.tar.gz" \
-      && tar xzf "otrs-${OTRS_VERSION}.tar.gz" \
-      && test -d "otrs-${OTRS_VERSION}/scripts/database" \
-      && test -f "otrs-${OTRS_VERSION}/scripts/database/otrs-schema.mysql.sql"; then \
-      mv "otrs-${OTRS_VERSION}" otrs; \
-      rm -f "otrs-${OTRS_VERSION}.tar.gz"; \
-      useradd -r -d /opt/otrs -c 'OTRS user' otrs; \
-      usermod -G apache otrs; \
-      cd /opt/otrs; \
-      cp Kernel/Config.pm.dist Kernel/Config.pm; \
-      bin/otrs.SetPermissions.pl /opt/otrs --otrs-user=otrs --web-group=apache; \
-    else \
-      rm -f "otrs-${OTRS_VERSION}.tar.gz"; \
+    OTRS_TGZ="otrs-${OTRS_VERSION}.tar.gz"; \
+    rm -rf "otrs-${OTRS_VERSION}" otrs "${OTRS_TGZ}"; \
+    for url in \
+      "https://ftp.otrs.org/pub/otrs/${OTRS_TGZ}" \
+      "https://download.znuny.org/releases/${OTRS_TGZ}"; do \
+      echo "Baixando OTRS de ${url}"; \
+      if wget -O "${OTRS_TGZ}" "${url}" \
+        && test -s "${OTRS_TGZ}" \
+        && tar xzf "${OTRS_TGZ}" \
+        && test -d "otrs-${OTRS_VERSION}/bin/cgi-bin" \
+        && test -f "otrs-${OTRS_VERSION}/bin/cgi-bin/index.pl" \
+        && test -f "otrs-${OTRS_VERSION}/scripts/database/otrs-schema.mysql.sql"; then \
+        break; \
+      fi; \
+      rm -f "${OTRS_TGZ}"; \
       rm -rf "otrs-${OTRS_VERSION}"; \
-      mkdir -p /opt/otrs/Kernel/Config/Files \
-        /opt/otrs/Kernel/System/Ticket/Event \
-        /opt/otrs/var \
-        /opt/otrs/bin; \
-      useradd -r -d /opt/otrs -c 'OTRS user' otrs; \
-      usermod -G apache otrs; \
-      printf '%s\n' \
-        'package Kernel::Config;' \
-        'use strict;' \
-        'use warnings;' \
-        'sub Load {}' \
-        'sub new { my ($$Type, %Param) = @_; my $$Self = {}; for (keys %Param) { $$Self->{$$_} = $$Param{$$_} } return bless $$Self, $$Type; }' \
-        '1;' > /opt/otrs/Kernel/Config.pm; \
-    fi
+    done; \
+    if [ ! -f "otrs-${OTRS_VERSION}/bin/cgi-bin/index.pl" ]; then \
+      echo "Falha ao obter OTRS ${OTRS_VERSION} com cgi-bin/index.pl" >&2; \
+      exit 1; \
+    fi; \
+    mv "otrs-${OTRS_VERSION}" otrs; \
+    rm -f "${OTRS_TGZ}"; \
+    useradd -r -d /opt/otrs -c 'OTRS user' otrs; \
+    usermod -G apache otrs; \
+    cd /opt/otrs; \
+    cp Kernel/Config.pm.dist Kernel/Config.pm; \
+    bin/otrs.SetPermissions.pl /opt/otrs --otrs-user=otrs --otrs-group=otrs --web-user=apache --web-group=apache
 
 COPY --from=python-runtime /opt/python /opt/python
 COPY --from=python-runtime /opt/notifier /opt/notifier
@@ -99,9 +98,7 @@ COPY infra/docker/otrs/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh \
     && chmod +x /opt/notifier/bin/otrs-gchat-alert \
-    && if [ -f /opt/otrs/scripts/apache2-httpd.include.conf ]; then \
-         ln -sf /opt/otrs/scripts/apache2-httpd.include.conf /etc/httpd/conf.d/zzz-otrs.conf; \
-       fi
+    && rm -f /etc/httpd/conf.d/zzz-otrs.conf
 
 EXPOSE 80
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

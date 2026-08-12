@@ -31,5 +31,5 @@ CREATE TABLE IF NOT EXISTS gchat_alert_dispatch (
 );
 
 INSERT INTO queue (id, name)
-VALUES (1, 'Raw'), (2, 'CloudTeam')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
+VALUES (1, 'Raw')
+ON DUPLICATE KEY UPDATE name = 'Raw';

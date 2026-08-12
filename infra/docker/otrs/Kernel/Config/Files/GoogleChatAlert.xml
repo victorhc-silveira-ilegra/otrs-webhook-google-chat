@@ -9,6 +9,7 @@
             <Hash>
                 <Item Key="Module">Kernel::System::Ticket::Event::GoogleChatAlert</Item>
                 <Item Key="Event">TicketCreate</Item>
+                <Item Key="Queue">Raw</Item>
             </Hash>
         </Setting>
     </ConfigItem>

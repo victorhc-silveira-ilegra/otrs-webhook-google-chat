@@ -6,7 +6,7 @@ Stack local da PoC OTRS → Google Chat (notifier Python + MariaDB + WireMock + 
 
 | Servico | Porta | Papel |
 |---------|-------|--------|
-| `otrs` | 8081 | OTRS 3.2.1 (CentOS 7 + Apache + Perl); Event Module chama a CLI |
+| `otrs` | 8081 | OTRS 3.2.1 (CentOS 7 + Apache + Perl); UI em `/otrs/index.pl`; Event Module chama a CLI |
 | `mariadb` | 3306 | Banco (schema minimo `init.sql` + ledger de dispatch) |
 | `mock-webhook` | 8080 | WireMock (opcional; PoC pode usar webhook real via `.env`) |
 | `notifier` | - | Imagem Python com `otrs-gchat-alert` |
@@ -18,6 +18,7 @@ make docker-up
 make docker-rebuild
 make docker-ps
 make docker-smoke
+make docker-health
 make docker-down
 make docker-clean
 ```
@@ -25,9 +26,11 @@ make docker-clean
 - `docker-clean` e destrutivo (remove volumes, MariaDB incluso).
 - `docker-rebuild` refaz build e recria containers.
 - `docker-smoke` espera schema (`ticket`/`queue`/`gchat_alert_dispatch`) e valida envio real via `.env` + idempotencia + race no ledger MariaDB (`infra/docker/scripts/docker-smoke.sh`).
+- `docker-health` valida OTRS (`/otrs/index.pl`), WireMock (`/health`), MariaDB (`mysqladmin ping`) e a CLI do notifier.
 - `docker-logs` mostra as ultimas `200` linhas de `otrs` e `notifier` por padrao (`DOCKER_LOGS_SERVICES`; use `DOCKER_SERVICE=mariadb` ou `mock-webhook` quando precisar; `F=1` para follow).
 - Apos o rebuild, espere linhas `OTRS ready` / `notifier ready`. Validacao do alerta continua em `make docker-smoke` (eventos da CLI aparecem no terminal do smoke, nao no log idle do notifier).
 - WireMock continua na stack como mock opcional; com `WEBHOOK_URL` real no `.env`, o smoke nao depende dele.
+- Event Module filtra `Queue=Raw` (`GoogleChatAlert.xml` + check no Perl).
 
 Se o schema nao aparecer: `make docker-clean && make docker-up`.
 
@@ -37,7 +40,7 @@ Se o schema nao aparecer: `make docker-clean && make docker-up`.
 
 - cria `queue` e `ticket` minimos
 - cria `gchat_alert_dispatch` (PK `ticket_id`, UNIQUE `dedup_hash`)
-- seed das filas `Raw` e `CloudTeam`
+- seed da fila `Raw` (schema minimo da PoC; no OTRS completo a fila `Raw` ja vem no seed oficial)
 
 Volumes ja existentes: `wait-for-otrs-schema.sh` aplica `CREATE TABLE IF NOT EXISTS` do ledger.
 ## Event Module
@@ -52,6 +55,8 @@ otrs-gchat-alert --ticket-id ... --ticket-number ... --title ... --queue ...
 ```
 
 `NOTIFIER_BIN` aponta para a CLI no container OTRS (`/opt/notifier/bin/otrs-gchat-alert`).
+
+UI local: `http://localhost:8081/otrs/index.pl` (esperado `200` ou `302`). O Dockerfile baixa o tarball do OTRS (`ftp.otrs.org` com fallback `download.znuny.org`) e exige `bin/cgi-bin/index.pl`.
 
 ## Variaveis
 

@@ -13,10 +13,12 @@ INSERT_SQL="/opt/otrs/scripts/database/otrs-initial_insert.mysql.sql"
 POST_SQL="/opt/otrs/scripts/database/otrs-schema-post.mysql.sql"
 
 if [[ -f "${CONFIG_PM}" ]]; then
-  sed -i "s|\$Self->{DatabaseHost}.*|\$Self->{DatabaseHost} = '${DB_HOST}';|" "${CONFIG_PM}" || true
-  sed -i "s|\$Self->{Database}.*|\$Self->{Database} = '${DB_NAME}';|" "${CONFIG_PM}" || true
-  sed -i "s|\$Self->{DatabaseUser}.*|\$Self->{DatabaseUser} = '${DB_USER}';|" "${CONFIG_PM}" || true
-  sed -i "s|\$Self->{DatabasePw}.*|\$Self->{DatabasePw} = '${DB_PASSWORD}';|" "${CONFIG_PM}" || true
+  sed -i -E \
+    -e "s|(\\\$Self->\{DatabaseHost\}[[:space:]]*=[[:space:]]*)'[^']*'|\1'${DB_HOST}'|" \
+    -e "s|^([[:space:]]*)\\\$Self->\{Database\}[[:space:]]*=[[:space:]]*'[^']*'|\1\$Self->{Database} = '${DB_NAME}';|" \
+    -e "s|(\\\$Self->\{DatabaseUser\}[[:space:]]*=[[:space:]]*)'[^']*'|\1'${DB_USER}'|" \
+    -e "s|(\\\$Self->\{DatabasePw\}[[:space:]]*=[[:space:]]*)'[^']*'|\1'${DB_PASSWORD}'|" \
+    "${CONFIG_PM}" || true
 fi
 
 for _ in $(seq 1 60); do
@@ -58,6 +60,16 @@ if [[ ! -f /opt/otrs/var/.db_initialized ]]; then
   fi
   mkdir -p /opt/otrs/var
   touch /opt/otrs/var/.db_initialized
+fi
+
+if [[ -d /opt/otrs/bin/cgi-bin ]]; then
+  chmod -R a+rx /opt/otrs/bin/cgi-bin || true
+fi
+if compgen -G "/opt/otrs/bin/otrs.*" >/dev/null; then
+  chmod a+rx /opt/otrs/bin/otrs.* || true
+fi
+if id otrs >/dev/null 2>&1 && getent group apache >/dev/null; then
+  chown -R otrs:apache /opt/otrs || true
 fi
 
 echo "OTRS ready: schema ok, iniciando Apache"

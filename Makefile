@@ -19,7 +19,7 @@ RESET  := \033[0m
 
 .PHONY: help app-install app-lint app-test app-security app-run app-pre-commit \
 	app-pre-commit-run app-setup app-clean docker-up docker-down docker-ps \
-	docker-logs docker-smoke docker-restart docker-clean docker-rebuild
+	docker-logs docker-smoke docker-health docker-restart docker-clean docker-rebuild
 
 help:
 	@echo -e "$(BLUE)========================================================================$(RESET)"
@@ -49,6 +49,7 @@ help:
 	@echo -e "  $(GREEN)docker-ps$(RESET)          - Status"
 	@echo -e "  $(GREEN)docker-logs$(RESET)        - Logs (DOCKER_SERVICE=... ou DOCKER_LOGS_SERVICES; F=1)"
 	@echo -e "  $(GREEN)docker-smoke$(RESET)       - Smoke real via .env (idempotencia + race no ledger)"
+	@echo -e "  $(GREEN)docker-health$(RESET)      - Healthcheck OTRS/WireMock/MariaDB/notifier"
 	@echo -e "$(BLUE)========================================================================$(RESET)"
 
 app-install:
@@ -114,3 +115,6 @@ docker-logs:
 
 docker-smoke:
 	@bash infra/docker/scripts/docker-smoke.sh
+
+docker-health:
+	@bash infra/docker/scripts/docker-health.sh
