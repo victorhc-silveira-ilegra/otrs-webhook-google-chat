@@ -1,0 +1,11 @@
+---
+description: Engenharia e qualidade operacional
+alwaysApply: true
+---
+
+# Engineering
+
+- Gates: lint, test, security, clean via `clean_workspace.py`.
+- Limite de 300 linhas por arquivo em `app/src`.
+- Sem Conda; runtime e `.venv` em Linux nativo.
+- Hooks em `linters/git-hooks` + `.pre-commit-config.yaml`.

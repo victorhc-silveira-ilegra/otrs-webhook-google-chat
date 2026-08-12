@@ -1,0 +1,11 @@
+---
+description: Stack Docker OTRS 3.2.1 local
+alwaysApply: false
+---
+
+# Infra Docker
+
+- Stack em `infra/docker`: otrs, mariadb, mock-webhook, notifier.
+- Nao apontar PoC para webhook real de producao.
+- Usar `make docker-up` / `make docker-smoke`.
+- Event Module Perl chama o CLI Python no TicketCreate.

@@ -1,0 +1,8 @@
+name: Test
+description: Pytest com cobertura 100%
+runs:
+  using: composite
+  steps:
+    - name: Run test stage
+      shell: bash
+      run: python app/scripts/operations/clean_workspace.py --stage test

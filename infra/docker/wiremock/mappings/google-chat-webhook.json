@@ -1,0 +1,16 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/v1/spaces/POC/messages"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "name": "spaces/POC/messages/mock-1",
+      "text": "accepted"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+# Pre-commit (Python): pre-commit
+# Pre-commit (Node.js, fora do pip): Node.js + npm para commitlint via npx
+# CI seguranca (binario, fora do pip): gitleaks
+
+-r requirements.txt
+
+# ---- PRE-COMMIT ----
+pre-commit==4.6.2              # Gerenciador de ganchos (hooks) do Git para rodar validacoes antes de cada commit
+
+# ---- LINT & QUALIDADE (hook lint + make app-lint) ----
+ruff==0.16.2                   # Linter e formatador de codigo Python (check + format)
+mypy==2.3.0                    # Type checker estatico em modo strict
+vulture==2.16                  # Identifica codigo morto (funcoes/classes/variaveis nao usadas)
+
+# ---- SEGURANCA (hook security + make app-security) ----
+bandit==1.9.4                  # Varre o codigo em busca de falhas comuns de seguranca em Python
+pip-audit==2.10.1              # Escaneia dependencias do projeto para CVEs conhecidas
+
+# ---- TESTES & COBERTURA (hook test + make app-test) ----
+pytest==9.1.1                  # Framework principal de testes automatizados
+pytest-xdist==3.8.0            # Executa testes em paralelo (multiplos workers)
+pytest-cov==7.1.0              # Integra cobertura ao pytest (inclui workers xdist)
+coverage==7.15.4               # Mede cobertura de linhas/branches do codigo
+
+# ---- TIPOS (mypy) ----
+types-requests==2.33.0.20260712  # Stubs de tipagem auxiliares para o ecossistema HTTP
+types-PyMySQL==1.1.0.20260518  # Stubs de tipagem para PyMySQL (dedup MariaDB)

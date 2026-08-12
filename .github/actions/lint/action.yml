@@ -1,0 +1,8 @@
+name: Lint
+description: Ruff, mypy, vulture e limite de linhas
+runs:
+  using: composite
+  steps:
+    - name: Run lint stage
+      shell: bash
+      run: python app/scripts/operations/clean_workspace.py --stage lint

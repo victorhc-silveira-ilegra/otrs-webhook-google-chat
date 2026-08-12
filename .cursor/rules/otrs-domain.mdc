@@ -1,0 +1,10 @@
+---
+description: Camadas DDD/hexagonais do servico de alerta
+alwaysApply: true
+---
+
+# Domain pure
+
+- Entidades e services de dominio nao conhecem httpx, argparse ou Docker.
+- Validacoes de Ticket ficam no dominio.
+- Formatacao de payload de alerta e regra de dominio/aplicacao, nao de CLI.

@@ -1,0 +1,16 @@
+---
+description: Regras do projeto OTRS Webhook Google Chat (DDD, qualidade, docs)
+alwaysApply: true
+---
+
+# otrs-webhook-google-chat
+
+- Codigo da aplicacao vive em `app/src` com camadas `domain`, `application`, `infrastructure`, `presentation`.
+- `domain` e `application` nao importam `infrastructure` nem `presentation`.
+- Nao escreva comentarios no codigo.
+- Use type hints estritos e preserve `mypy --strict`.
+- Mantenha 100% de cobertura (`make app-test`).
+- Qualidade via `app/scripts/operations/clean_workspace.py` e `Makefile`.
+- Documentacao em PT-BR; sem emojis.
+- Commits Conventional Commits (`linters/commitlint.config.mjs`).
+- Na PoC, `WEBHOOK_URL` aponta ao WireMock.

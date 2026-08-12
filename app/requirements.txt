@@ -1,0 +1,5 @@
+# ---- COMUNICACAO & REDE ----
+httpx==0.28.1                  # Cliente HTTP moderno para POST do webhook Google Chat / WireMock
+
+# ---- BANCO / DEDUP OTRS ----
+PyMySQL==1.1.1                 # Driver MariaDB puro Python (deduplicacao; amigavel ao CentOS 7)

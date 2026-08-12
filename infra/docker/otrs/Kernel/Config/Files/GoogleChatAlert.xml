@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<otrs_config version="1.0" init="Application">
+    <ConfigItem Name="Ticket::EventModulePost###999-GoogleChatAlert" Required="0" Valid="1">
+        <Description Lang="en">Send Google Chat alert on TicketCreate via CLI notifier.</Description>
+        <Description Lang="pt_BR">Envia alerta Google Chat no TicketCreate via CLI notifier.</Description>
+        <Group>Ticket</Group>
+        <SubGroup>Core::TicketEventModulePost</SubGroup>
+        <Setting>
+            <Hash>
+                <Item Key="Module">Kernel::System::Ticket::Event::GoogleChatAlert</Item>
+                <Item Key="Event">TicketCreate</Item>
+            </Hash>
+        </Setting>
+    </ConfigItem>
+</otrs_config>

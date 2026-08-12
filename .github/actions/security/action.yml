@@ -1,0 +1,8 @@
+name: Security
+description: Bandit e pip-audit
+runs:
+  using: composite
+  steps:
+    - name: Run security stage
+      shell: bash
+      run: python app/scripts/operations/clean_workspace.py --stage security

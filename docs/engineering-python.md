@@ -1,0 +1,97 @@
+# Engenharia Python
+
+Guia de engenharia do servico `otrs-gchat-alert` (camadas, qualidade, config e runtime).
+
+## Objetivos
+
+- Hexagonal / DDD com cobertura 100%
+- Composition root na CLI
+- Logging semantico enxuto (ver [engineering-logging.md](engineering-logging.md))
+- Config centralizada no `.env` da raiz
+- Sem comentarios no codigo de aplicacao
+
+## Fluxo de runtime
+
+1. CLI parseia `--ticket-id`, `--ticket-number`, `--title`, `--queue`
+2. `Settings.from_env()` carrega `.env` (salvo `OTRS_DISABLE_DOTENV`)
+3. Setup de logging (`LOG_LEVEL` / `LOG_FORMAT` / `LOG_FILE`)
+4. Emite `alert.run.started`
+5. Opcionalmente monta `OTRSDatabaseDuplicateChecker`
+6. `ProcessAlertUseCase.execute(ticket)`:
+   - se duplicata → `skipped_duplicate`
+   - senao formata texto + `NotifierPort.send`
+7. CLI emite `skipped_duplicate` ou `finished` / `failed`
+
+## Ports e adapters
+
+| Port | Adapter | Notas |
+|------|---------|--------|
+| `NotifierPort` | `GoogleChatWebhookAdapter` | `httpx`; redact de query no log |
+| `DuplicateCheckerPort` | `OTRSDatabaseDuplicateChecker` | PyMySQL; fail-open |
+
+Ports sao `typing.Protocol` (sem ABC).
+
+## Domain services
+
+`AlertMessageFormatter`:
+
+- entrada: `Ticket` + `otrs_base_url` (via construtor / Settings)
+- saida: `{"text": "..."}` apenas
+- link: `<{OTRS_BASE_URL}?Action=AgentTicketZoom;TicketID={id}|Acessar Ticket>`
+
+## Qualidade
+
+| Comando | O que roda |
+|---------|------------|
+| `make app-lint` | Ruff, mypy strict, vulture, limite 300 linhas |
+| `make app-test` | pytest-xdist + coverage 100% (branch) |
+| `make app-security` | bandit + pip-audit |
+| `make app-pre-commit-run` | hooks em todos os arquivos |
+
+Orquestrador: `app/scripts/operations/clean_workspace.py`.
+
+Convencoes:
+
+- Conventional Commits (`linters/commitlint.config.mjs`)
+- Sem emojis em codigo / logs / docs tecnicas
+- Sem comentarios no codigo Python de `app/src`
+
+## Testes
+
+```text
+app/tests/
+├── unit/domain/
+├── unit/application/
+├── unit/infrastructure/
+├── unit/presentation/
+└── integration/infrastructure/
+```
+
+`conftest.py` define `OTRS_DISABLE_DOTENV=1` para isolar testes do `.env` local.
+
+Fakes/Mocks: `FakeNotifier`, `FakeDuplicateChecker`, `httpx` transport, `pymysql.connect` patchado.
+
+## Config e segredos
+
+- `.env` na raiz (gitignored); template em `.env.example`
+- Compose: `docker compose --env-file .env ...`
+- Python: `load_project_dotenv(override=True)` em `Settings.from_env()`
+- Nunca commitar `WEBHOOK_URL` real
+
+Tabela completa de variaveis: [arquitetura.md](arquitetura.md#configuracao-python).
+
+## Entry points
+
+| Entrada | Como |
+|---------|------|
+| CLI instalada | `otrs-gchat-alert ...` (`pyproject` scripts) |
+| Repo root | `python run.py ...` / `make app-run` |
+| Container `notifier` | mesma CLI no PATH |
+| OTRS Event Module | `NOTIFIER_BIN` → CLI com args do ticket |
+
+## Relacionados
+
+- [arquitetura.md](arquitetura.md) — camadas e fluxo
+- [structure.md](structure.md) — arvore do repo
+- [engineering-logging.md](engineering-logging.md) — eventos
+- [infra-docker.md](infra-docker.md) — stack Docker

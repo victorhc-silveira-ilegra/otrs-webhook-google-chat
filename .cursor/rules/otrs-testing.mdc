@@ -1,0 +1,11 @@
+---
+description: Padrao de testes e cobertura
+alwaysApply: true
+---
+
+# Testing
+
+- Unitarios para domain/application; integracao para adapter HTTP.
+- Cobertura fail-under 100% em `domain`, `application`, `infrastructure`, `presentation`.
+- Preferir fakes/ports em testes de application; httpx mock transport na integracao.
+- Executar via `make app-test` (pytest-xdist + cov).

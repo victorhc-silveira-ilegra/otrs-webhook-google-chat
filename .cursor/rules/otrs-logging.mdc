@@ -1,0 +1,13 @@
+---
+description: Politica de logs semanticos anti-poluicao
+alwaysApply: true
+---
+
+# Logging
+
+- Eventos permitidos: `alert.run.started`, `alert.run.finished`, `alert.run.failed`, `alert.webhook.sent`, `alert.webhook.failed`.
+- Nao dump de payload JSON nem body HTTP em INFO.
+- Nao logar `WEBHOOK_URL` crua; usar `redact_webhook_url`.
+- Dominio e use case nao emitem logs.
+- Maximo ~3 linhas INFO por run feliz.
+- `exc_info` apenas em DEBUG nas falhas.

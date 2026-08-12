@@ -1,0 +1,48 @@
+# ---- TEXTO: LF por padrao (auto detecta binario) ----
+* text=auto eol=lf
+
+# ---- SCRIPTS WINDOWS: CRLF ----
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.psm1 text eol=crlf
+
+# ---- FONTES E CONFIG (LF explicito) ----
+*.json text eol=lf
+*.md text eol=lf
+*.mjs text eol=lf
+*.js text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.pm text eol=lf
+*.xml text eol=lf
+*.toml text eol=lf
+*.txt text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+.pre-commit-config.yaml text eol=lf
+.python-version text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+.env.example text eol=lf
+Makefile text eol=lf
+
+# ---- BINARIOS (depois do * text=auto para nao serem tratados como texto) ----
+*.ico binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.gif binary
+*.webp binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.gz binary
+*.zip binary
+*.whl binary
+*.so binary
+*.dll binary
+*.pyd binary
+*.sql.gz binary
