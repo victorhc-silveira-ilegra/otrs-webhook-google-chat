@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "otrs-webhook-google-chat"
-version = "1.1.1"
+version = "1.2.0"
 description = "PoC de alertas OTRS 3.2.1 para Google Chat (DDD / Hexagonal)"
 readme = "README.md"
 requires-python = ">=3.11"
