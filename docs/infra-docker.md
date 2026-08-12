@@ -17,6 +17,7 @@ Stack local da PoC OTRS → Google Chat (notifier Python + MariaDB + WireMock + 
 make docker-up
 make docker-rebuild
 make docker-ps
+make docker-sh
 make docker-smoke
 make docker-health
 make docker-down
@@ -25,10 +26,11 @@ make docker-clean
 
 - `docker-clean` e destrutivo (remove volumes, MariaDB incluso).
 - `docker-rebuild` refaz build e recria containers.
-- `docker-smoke` espera schema (`ticket`/`queue`/`gchat_alert_dispatch`) e valida envio real via `.env` + idempotencia + race no ledger MariaDB (`infra/docker/scripts/docker-smoke.sh`).
+- `docker-sh` abre `/bin/bash` no servico (`DOCKER_SERVICE=otrs` por padrao; tambem `notifier`, `mariadb`, `mock-webhook`).
+- `docker-smoke` espera schema (`ticket`/`queue`/`gchat_alert_dispatch`), cria tickets reais na fila `Raw` via API Perl (`TicketCreate` + Event Module) e valida webhook do `.env` + idempotencia + race no ledger (`infra/docker/scripts/docker-smoke.sh`, helper `otrs-create-raw-ticket.pl`).
 - `docker-health` valida OTRS (`/otrs/index.pl`), WireMock (`/health`), MariaDB (`mysqladmin ping`) e a CLI do notifier.
 - `docker-logs` mostra as ultimas `200` linhas de `otrs` e `notifier` por padrao (`DOCKER_LOGS_SERVICES`; use `DOCKER_SERVICE=mariadb` ou `mock-webhook` quando precisar; `F=1` para follow).
-- Apos o rebuild, espere linhas `OTRS ready` / `notifier ready`. Validacao do alerta continua em `make docker-smoke` (eventos da CLI aparecem no terminal do smoke, nao no log idle do notifier).
+- Apos o rebuild, espere linhas `OTRS ready` / `notifier ready`. O smoke dispara o caminho completo OTRS → Event Module → CLI → webhook (logs da CLI aparecem no terminal do smoke).
 - WireMock continua na stack como mock opcional; com `WEBHOOK_URL` real no `.env`, o smoke nao depende dele.
 - Event Module filtra `Queue=Raw` (`GoogleChatAlert.xml` + check no Perl).
 
@@ -56,7 +58,7 @@ otrs-gchat-alert --ticket-id ... --ticket-number ... --title ... --queue ...
 
 `NOTIFIER_BIN` aponta para a CLI no container OTRS (`/opt/notifier/bin/otrs-gchat-alert`).
 
-UI local: `http://localhost:8081/otrs/index.pl` (esperado `200` ou `302`). O Dockerfile baixa o tarball do OTRS (`ftp.otrs.org` com fallback `download.znuny.org`) e exige `bin/cgi-bin/index.pl`.
+UI local: `http://localhost:8081/otrs/index.pl` (esperado `200` ou `302`). O Dockerfile baixa o tarball do OTRS (`ftp.otrs.org` com fallback `download.znuny.org`) e exige `bin/cgi-bin/index.pl`. O entrypoint roda `otrs.RebuildConfig.pl` para gerar `ZZZAAuto.pm` (necessario para `TicketCreate` via CLI/smoke).
 
 ## Variaveis
 
@@ -68,7 +70,7 @@ Fonte: `.env` na raiz (`docker compose --env-file .env`). O Python tambem carreg
 | `HTTP_TIMEOUT_SECONDS` | `10` |
 | `OTRS_BASE_URL` | `https://portal.ilegra.com/otrs/index.pl` |
 | `LOG_LEVEL` / `LOG_FORMAT` / `LOG_FILE` | logging semantico |
-| `DEDUP_ENABLED` | compose forca `true` no `notifier` |
+| `DEDUP_ENABLED` | compose forca `true` no `notifier` e no `otrs` (CLI do Event Module) |
 | `DEDUP_WINDOW_MINUTES` | `30` |
 | `OTRS_DB_*` | no `notifier`/`otrs` o compose fixa host `mariadb` |
 | `NOTIFIER_BIN` | so no container `otrs` |

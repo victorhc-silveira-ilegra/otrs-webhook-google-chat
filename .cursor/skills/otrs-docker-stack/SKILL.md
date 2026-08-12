@@ -12,6 +12,7 @@ make docker-ps
 make docker-health
 make docker-smoke
 make docker-logs
+make docker-sh
 ```
 
 ## Sucesso
@@ -21,4 +22,5 @@ make docker-logs
 - `docker-logs` mostra `OTRS ready` e `notifier ready`
 - `curl -sI http://localhost:8081/otrs/index.pl` responde `200` ou `302`
 - Event Module filtra fila `Raw`
-- `docker-smoke` envia via `WEBHOOK_URL` do `.env` e valida idempotencia/race no ledger
+- `docker-smoke` cria tickets reais em `Raw` (`TicketCreate`), envia via `WEBHOOK_URL` do `.env` e valida idempotencia/race no ledger
+- `docker-sh` abre bash no servico (`DOCKER_SERVICE=otrs` por padrao)

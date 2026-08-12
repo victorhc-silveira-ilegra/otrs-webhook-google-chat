@@ -72,5 +72,12 @@ if id otrs >/dev/null 2>&1 && getent group apache >/dev/null; then
   chown -R otrs:apache /opt/otrs || true
 fi
 
+if [[ -x /opt/otrs/bin/otrs.RebuildConfig.pl ]]; then
+  /opt/otrs/bin/otrs.RebuildConfig.pl >/dev/null
+  if id otrs >/dev/null 2>&1 && getent group apache >/dev/null; then
+    chown otrs:apache /opt/otrs/Kernel/Config/Files/ZZZAAuto.pm 2>/dev/null || true
+  fi
+fi
+
 echo "OTRS ready: schema ok, iniciando Apache"
 exec "$@"
