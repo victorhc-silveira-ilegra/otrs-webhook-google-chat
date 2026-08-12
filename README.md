@@ -8,6 +8,7 @@ Layout operacional no padrao Aether adaptado (`app/`, `Makefile`, `clean_workspa
 
 | Doc | Conteudo |
 |-----|----------|
+| [docs/CHANGELOG.md](docs/CHANGELOG.md) | Historico de releases (semantic-release) |
 | [docs/arquitetura.md](docs/arquitetura.md) | Camadas, ports, dedup, contrato do webhook, env |
 | [docs/structure.md](docs/structure.md) | Arvore do repo e regras de dependencia |
 | [docs/engineering-python.md](docs/engineering-python.md) | Engenharia do servico Python |
@@ -80,4 +81,9 @@ Detalhes em [docs/infra-docker.md](docs/infra-docker.md).
 
 ## CI
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) executa actions compostas de lint, test e security.
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) segue o padrao Aether:
+
+- jobs paralelos: lint, test, security (actions compostas)
+- job `release` (semantic-release) apos qualidade em `main`
+- tags sincronizadas via `.github/actions/sync-tags`
+- changelog em [`docs/CHANGELOG.md`](docs/CHANGELOG.md)

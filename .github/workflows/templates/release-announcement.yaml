@@ -1,0 +1,14 @@
+# OTRS Webhook Google Chat — Release {VERSION}
+
+CI gerou uma nova versao da PoC **OTRS 3.2.1 → Google Chat**.
+
+### Detalhes
+- **Versao:** `{VERSION}`
+- **Data:** `{DATE}`
+- **Stack:** Python hexagonal/DDD, MariaDB dedup, Docker legado
+
+### Historico
+{CHANGELOG}
+
+---
+Release automatico (semantic-release).
