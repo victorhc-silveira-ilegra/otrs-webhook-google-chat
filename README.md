@@ -3,24 +3,11 @@
 [![CI](https://github.com/victorhc-silveira-ilegra/otrs-webhook-google-chat/actions/workflows/ci.yml/badge.svg)](https://github.com/victorhc-silveira-ilegra/otrs-webhook-google-chat/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/victorhc-silveira-ilegra/otrs-webhook-google-chat?display_name=tag&sort=semver)](https://github.com/victorhc-silveira-ilegra/otrs-webhook-google-chat/releases)
 [![Python](https://img.shields.io/badge/python-3.13-blue?logo=python&logoColor=white)](https://www.python.org/downloads/)
-[![Requires Python](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fvictorhc-silveira-ilegra%2Fotrs-webhook-google-chat%2Fmain%2Fapp%2Fpyproject.toml)](app/pyproject.toml)
-
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)](app/pyproject.toml)
-[![Ruff](https://img.shields.io/badge/linter-ruff-D7FF64?logo=ruff&logoColor=black)](https://docs.astral.sh/ruff/)
-[![mypy](https://img.shields.io/badge/mypy-strict-blue)](https://mypy-lang.org/)
-[![bandit](https://img.shields.io/badge/security-bandit-yellow)](https://bandit.readthedocs.io/)
-[![pip-audit](https://img.shields.io/badge/deps-pip--audit-informational)](https://pypi.org/project/pip-audit/)
-
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
-[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow?logo=conventionalcommits&logoColor=white)](https://www.conventionalcommits.org/)
-[![Semantic Release](https://img.shields.io/badge/release-semantic--release-e10079?logo=semantic-release&logoColor=white)](https://semantic-release.gitbook.io/)
-[![SemVer](https://img.shields.io/badge/semver-2.0.0-blue)](https://semver.org/)
-
 [![Architecture](https://img.shields.io/badge/architecture-hexagonal%20%2F%20DDD-0A66C2)](docs/arquitetura.md)
-[![TDD](https://img.shields.io/badge/tests-TDD%20%2B%20pytest-0A9EDC?logo=pytest&logoColor=white)](docs/engineering-python.md)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow?logo=conventionalcommits&logoColor=white)](https://www.conventionalcommits.org/)
 [![Docker](https://img.shields.io/badge/docker-compose-2496ED?logo=docker&logoColor=white)](docs/infra-docker.md)
 [![OTRS](https://img.shields.io/badge/OTRS-3.2.1-orange)](docs/infra-docker.md)
-[![License](https://img.shields.io/badge/license-Proprietary-lightgrey)](app/pyproject.toml)
 
 PoC de integracao de alertas entre **OTRS 3.2.1** e **Google Chat**, com servico Python em arquitetura hexagonal / DDD, TDD e stack Docker legada (CentOS 7, Apache, Perl 5.16, MariaDB).
 
