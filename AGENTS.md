@@ -21,6 +21,10 @@ make docker-up
 make docker-smoke
 ```
 
+## Prompt-modelo
+
+- [prompt-model.md](prompt-model.md) — contrato reutilizavel (DDD / hexagonal / TDD / qualidade) para colar em projetos futuros e adaptar a outra linguagem ou dominio
+
 ## Docs de referencia
 
 - [docs/arquitetura.md](docs/arquitetura.md)
