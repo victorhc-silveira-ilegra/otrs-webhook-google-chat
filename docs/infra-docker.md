@@ -27,11 +27,11 @@ make docker-clean
 - `docker-clean` e destrutivo (remove volumes, MariaDB incluso).
 - `docker-rebuild` refaz build e recria containers.
 - `docker-sh` abre `/bin/bash` no servico (`DOCKER_SERVICE=otrs` por padrao; tambem `notifier`, `mariadb`, `mock-webhook`).
-- `docker-smoke` espera schema (`ticket`/`queue`/`gchat_alert_dispatch`), cria tickets reais na fila `Raw` via API Perl (`TicketCreate` + Event Module) e valida webhook do `.env` + idempotencia + race no ledger (`infra/docker/scripts/docker-smoke.sh`, helper `otrs-create-raw-ticket.pl`).
+- `docker-smoke` espera schema (`ticket`/`queue`/`gchat_alert_dispatch`), cria tickets reais na fila `Raw` via API Perl (`TicketCreate` + Event Module) e valida webhook do `.env` + idempotencia + race no ledger (`infra/docker/scripts/docker-smoke.sh`, helper `otrs-create-raw-ticket.pl`). O smoke força `WINDOW_ENABLED=false` no `TicketCreate` para nao depender do relogio.
 - `docker-health` valida OTRS (`/otrs/index.pl`), WireMock (`/health`), MariaDB (`mysqladmin ping`) e a CLI do notifier.
 - `docker-logs` mostra as ultimas `200` linhas de `otrs` e `notifier` por padrao (`DOCKER_LOGS_SERVICES`; use `DOCKER_SERVICE=mariadb` ou `mock-webhook` quando precisar; `F=1` para follow).
 - Apos o rebuild, espere linhas `OTRS ready` / `notifier ready`. O smoke dispara o caminho completo OTRS → Event Module → CLI → webhook (logs da CLI aparecem no terminal do smoke).
-- WireMock continua na stack como mock opcional; com `WEBHOOK_URL` real no `.env`, o smoke nao depende dele.
+- WireMock continua na stack como mock opcional; com `GCHAT_WEBHOOK_URL` real no `.env`, o smoke nao depende dele.
 - Event Module filtra `Queue=Raw` (`GoogleChatAlert.xml` + check no Perl).
 
 Se o schema nao aparecer: `make docker-clean && make docker-up`.
@@ -66,12 +66,14 @@ Fonte: `.env` na raiz (`docker compose --env-file .env`). O Python tambem carreg
 
 | Variavel | Exemplo / nota |
 |----------|----------------|
-| `WEBHOOK_URL` | Incoming Webhook Google Chat ou WireMock |
+| `GCHAT_WEBHOOK_URL` | Incoming Webhook Google Chat ou WireMock |
 | `HTTP_TIMEOUT_SECONDS` | `10` |
 | `OTRS_BASE_URL` | `https://portal.ilegra.com/otrs/index.pl` |
-| `LOG_LEVEL` / `LOG_FORMAT` / `LOG_FILE` | logging semantico |
+| `LOG_LEVEL` / `LOG_FORMAT` / `LOG_FILE` / `LOG_DIR` | logging semantico; `LOG_DIR` diario em `logs/otrs-gchat-YYYY-MM-DD.log` |
 | `DEDUP_ENABLED` | compose forca `true` no `notifier` e no `otrs` (CLI do Event Module) |
 | `DEDUP_WINDOW_MINUTES` | `30` |
+| `WINDOW_ENABLED` | `true` |
+| `WINDOW_DAYS` / `WINDOW_START` / `WINDOW_END` / `WINDOW_TIMEZONE` | janela comercial |
 | `OTRS_DB_*` | no `notifier`/`otrs` o compose fixa host `mariadb` |
 | `NOTIFIER_BIN` | so no container `otrs` |
 

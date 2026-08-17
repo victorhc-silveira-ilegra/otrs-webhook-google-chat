@@ -13,6 +13,7 @@ Constantes em `infrastructure/logging/events.py`.
 |--------|-------|--------|
 | `alert.run.started` | INFO | CLI |
 | `alert.run.skipped_duplicate` | INFO | CLI |
+| `alert.run.skipped_outside_hours` | INFO | CLI |
 | `alert.dispatch.claim_failed` | WARNING | `OTRSDatabaseAlertDispatchLedger` (fail-open) |
 | `alert.webhook.sent` | INFO | `GoogleChatWebhookAdapter` |
 | `alert.webhook.failed` | ERROR | `GoogleChatWebhookAdapter` |
@@ -23,6 +24,7 @@ Caminhos tipicos:
 
 - Sucesso: `started` → `webhook.sent` → `finished` (3 linhas INFO)
 - Skip duplicata: `started` → `skipped_duplicate` (sem webhook / sem `finished`)
+- Skip fora da janela comercial: `started` → `skipped_outside_hours` (sem webhook / sem `finished`)
 - Fail-open claim: `started` → `dispatch.claim_failed` → `webhook.sent` → `finished`
 - Falha entrega: `started` → `webhook.failed` → `run.failed` (claim liberado)
 
@@ -32,7 +34,8 @@ Caminhos tipicos:
 |-----|---------|-----------|
 | `LOG_LEVEL` | `INFO` | Nivel root |
 | `LOG_FORMAT` | `text` | `text` (key=value) ou `json` |
-| `LOG_FILE` | vazio | Se definido, tambem grava em arquivo |
+| `LOG_FILE` | vazio | Se definido, tambem grava em arquivo extra |
+| `LOG_DIR` | `logs` | Tee de stdout/stderr em `LOG_DIR/otrs-gchat-YYYY-MM-DD.log` (fuso `WINDOW_TIMEZONE`); vazio desliga. No Docker o compose monta `logs/` do host em `/var/log/otrs-gchat`. `make app-clean` remove arquivos em `logs/` que nao sejam o do dia atual nem `.gitkeep` |
 
 Setup: `presentation.logging.setup_logging(...)`.
 
@@ -60,4 +63,11 @@ Setup: `presentation.logging.setup_logging(...)`.
 ```text
 2026-08-12 10:00:00,001 INFO event=alert.run.started ticket_id=42 ticket_number=20260812000042 title_preview=Falha VPN
 2026-08-12 10:00:00,010 INFO event=alert.run.skipped_duplicate ticket_id=42 title=Falha VPN queue=Raw
+```
+
+## Exemplo (fora da janela comercial)
+
+```text
+2026-08-15 10:00:00,001 INFO event=alert.run.started ticket_id=42 ticket_number=20260812000042 title_preview=Falha VPN
+2026-08-15 10:00:00,010 INFO event=alert.run.skipped_outside_hours ticket_id=42 title=Falha VPN queue=Raw
 ```

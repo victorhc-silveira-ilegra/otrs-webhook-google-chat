@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import pytest
 
 from application.use_cases.process_alert import ProcessAlertResult, ProcessAlertUseCase
 from domain.entities.ticket import Ticket
+from domain.services.business_hours import BusinessHoursWindow
 
 
 class FakeNotifier:
@@ -144,3 +147,61 @@ def test_process_alert_releases_claim_when_notifier_fails() -> None:
         use_case.execute(ticket)
 
     assert ledger.releases == [10]
+
+
+def test_should_skip_alert_outside_business_hours() -> None:
+    notifier = FakeNotifier()
+    ledger = FakeDispatchLedger(claim=True)
+    window = BusinessHoursWindow.from_env_values(
+        enabled=True,
+        days="mon,tue,wed,thu,fri",
+        start="09:00",
+        end="18:00",
+        timezone="America/Sao_Paulo",
+        clock=lambda: datetime(
+            2026, 8, 15, 10, 0, tzinfo=ZoneInfo("America/Sao_Paulo")
+        ),
+    )
+    use_case = ProcessAlertUseCase(
+        notifier=notifier,
+        dispatch_ledger=ledger,
+        business_hours=window,
+    )
+    ticket = Ticket(
+        ticket_id=10,
+        ticket_number="20260812000010",
+        title="CPU Alta em SRV-01",
+        queue="Raw",
+    )
+
+    result = use_case.execute(ticket)
+
+    assert result is ProcessAlertResult.SKIPPED_OUTSIDE_HOURS
+    assert notifier.payloads == []
+    assert ledger.claims == []
+
+
+def test_process_alert_sends_when_business_hours_disabled() -> None:
+    notifier = FakeNotifier()
+    window = BusinessHoursWindow.from_env_values(
+        enabled=False,
+        days="mon,tue,wed,thu,fri",
+        start="09:00",
+        end="18:00",
+        timezone="America/Sao_Paulo",
+        clock=lambda: datetime(
+            2026, 8, 15, 10, 0, tzinfo=ZoneInfo("America/Sao_Paulo")
+        ),
+    )
+    use_case = ProcessAlertUseCase(notifier=notifier, business_hours=window)
+    ticket = Ticket(
+        ticket_id=10,
+        ticket_number="20260812000010",
+        title="CPU Alta em SRV-01",
+        queue="Raw",
+    )
+
+    result = use_case.execute(ticket)
+
+    assert result is ProcessAlertResult.SENT
+    assert len(notifier.payloads) == 1

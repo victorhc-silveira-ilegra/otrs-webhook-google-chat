@@ -13,4 +13,4 @@ alwaysApply: true
 - Qualidade via `app/scripts/operations/clean_workspace.py` e `Makefile`.
 - Documentacao em PT-BR; sem emojis.
 - Commits Conventional Commits (`linters/commitlint.config.mjs`).
-- Na PoC, `WEBHOOK_URL` aponta ao WireMock.
+- Na PoC, `GCHAT_WEBHOOK_URL` aponta ao WireMock.

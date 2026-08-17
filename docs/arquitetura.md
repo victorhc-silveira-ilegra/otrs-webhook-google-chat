@@ -2,7 +2,7 @@
 
 ## Visao geral
 
-Servico Python em arquitetura **hexagonal / DDD**: regras de negocio e contratos ficam isolados da entrega HTTP e do MariaDB. O destino do webhook (`WEBHOOK_URL` no `.env`) pode ser WireMock ou Google Chat Incoming Webhook sem alterar dominio ou application.
+Servico Python em arquitetura **hexagonal / DDD**: regras de negocio e contratos ficam isolados da entrega HTTP e do MariaDB. O destino do webhook (`GCHAT_WEBHOOK_URL` no `.env`) pode ser WireMock ou Google Chat Incoming Webhook sem alterar dominio ou application.
 
 ```text
 OTRS 3.2.1 (TicketCreate)
@@ -34,6 +34,7 @@ Formatter         |                   |
 |--------|--------|
 | `entities/ticket.py` | `Ticket` imutavel: `ticket_id`, `ticket_number`, `title`, `queue` com validacao |
 | `services/alert_message_formatter.py` | Monta payload Google Chat **somente** `{"text": ...}` com link Zoom |
+| `services/business_hours.py` | Janela comercial (dias + horario + timezone); `allows(instant)` |
 
 O dominio **nao** loga e **nao** conhece httpx, PyMySQL nem arquivos `.env`.
 
@@ -43,12 +44,13 @@ O dominio **nao** loga e **nao** conhece httpx, PyMySQL nem arquivos `.env`.
 |--------|--------|
 | `ports/notifier.py` | `NotifierPort.send(payload)` |
 | `ports/alert_dispatch_ledger.py` | `try_claim` / `release` (idempotencia + dedup) |
-| `use_cases/process_alert.py` | Orquestra claim opcional → format → send (release se falhar) |
+| `use_cases/process_alert.py` | Orquestra janela comercial → claim opcional → format → send (release se falhar) |
 
 `ProcessAlertResult` (`StrEnum`):
 
 - `sent` — alerta despachado
 - `skipped_duplicate` — claim rejeitado (exit CLI `0`)
+- `skipped_outside_hours` — fora da janela comercial (exit CLI `0`)
 
 O use case **nao** loga; a presentation interpreta o resultado.
 
@@ -89,7 +91,7 @@ Fail-open: erro inesperado de DB no claim gera `alert.dispatch.claim_failed` (WA
 
 ## Contrato do webhook
 
-`POST` JSON em `WEBHOOK_URL`. Corpo:
+`POST` JSON em `GCHAT_WEBHOOK_URL`. Corpo:
 
 ```json
 {
@@ -105,11 +107,12 @@ Carregada por `Settings.from_env()` a partir do `.env` na raiz (e Compose `--env
 
 | Variavel | Default | Obrigatoria |
 |----------|---------|-------------|
-| `WEBHOOK_URL` | — | sim |
+| `GCHAT_WEBHOOK_URL` | — | sim |
 | `HTTP_TIMEOUT_SECONDS` | `10` | nao |
 | `LOG_LEVEL` | `INFO` | nao |
 | `LOG_FORMAT` | `text` (`text`\|`json`) | nao |
 | `LOG_FILE` | vazio | nao |
+| `LOG_DIR` | `logs` | nao |
 | `OTRS_BASE_URL` | `https://portal.ilegra.com/otrs/index.pl` | nao |
 | `DEDUP_ENABLED` | `false` | nao |
 | `DEDUP_WINDOW_MINUTES` | `30` | nao |
@@ -118,6 +121,11 @@ Carregada por `Settings.from_env()` a partir do `.env` na raiz (e Compose `--env
 | `OTRS_DB_NAME` | vazio | para dedup |
 | `OTRS_DB_USER` | vazio | para dedup |
 | `OTRS_DB_PASSWORD` | vazio | para dedup |
+| `WINDOW_ENABLED` | `true` | nao |
+| `WINDOW_DAYS` | `mon,tue,wed,thu,fri` | nao |
+| `WINDOW_START` | `09:00` | nao |
+| `WINDOW_END` | `18:00` (exclusivo) | nao |
+| `WINDOW_TIMEZONE` | `America/Sao_Paulo` | nao |
 | `OTRS_DISABLE_DOTENV` | `false` | testes (desliga `.env`) |
 
 Detalhes Docker: [infra-docker.md](infra-docker.md). Logging: [engineering-logging.md](engineering-logging.md). Eng. Python: [engineering-python.md](engineering-python.md).

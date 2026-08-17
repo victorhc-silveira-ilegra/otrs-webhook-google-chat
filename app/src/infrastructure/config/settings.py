@@ -2,8 +2,11 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from pathlib import Path
 
+from domain.services.business_hours import BusinessHoursWindow
 from infrastructure.config.dotenv_loader import load_project_dotenv
+from infrastructure.config.env import env_get
 
 
 def _parse_bool(raw: str) -> bool:
@@ -17,6 +20,7 @@ class Settings:
     log_level: str
     log_format: str
     log_file: str | None
+    log_dir: Path | None
     dedup_enabled: bool
     dedup_window_minutes: int
     otrs_base_url: str
@@ -25,6 +29,7 @@ class Settings:
     otrs_db_name: str | None
     otrs_db_user: str | None
     otrs_db_password: str | None
+    business_hours: BusinessHoursWindow
 
     def otrs_db_ready(self) -> bool:
         return bool(
@@ -49,9 +54,9 @@ class Settings:
     def from_env(cls) -> Settings:
         if not _parse_bool(os.environ.get("OTRS_DISABLE_DOTENV", "false")):
             load_project_dotenv(override=True)
-        webhook_url = os.environ.get("WEBHOOK_URL", "").strip()
+        webhook_url = env_get("GCHAT_WEBHOOK_URL")
         if not webhook_url:
-            raise ValueError("WEBHOOK_URL environment variable is required")
+            raise ValueError("GCHAT_WEBHOOK_URL environment variable is required")
         timeout_raw = os.environ.get("HTTP_TIMEOUT_SECONDS", "10").strip()
         try:
             timeout = float(timeout_raw)
@@ -65,6 +70,8 @@ class Settings:
             raise ValueError("LOG_FORMAT must be 'text' or 'json'")
         log_file_raw = os.environ.get("LOG_FILE", "").strip()
         log_file = log_file_raw or None
+        log_dir_raw = os.environ.get("LOG_DIR", "logs").strip()
+        log_dir = Path(log_dir_raw).expanduser() if log_dir_raw else None
         dedup_enabled = _parse_bool(os.environ.get("DEDUP_ENABLED", "false"))
         window_raw = os.environ.get("DEDUP_WINDOW_MINUTES", "30").strip()
         try:
@@ -92,12 +99,20 @@ class Settings:
         otrs_db_user = os.environ.get("OTRS_DB_USER", "").strip() or None
         password_raw = os.environ.get("OTRS_DB_PASSWORD")
         otrs_db_password = password_raw or None
+        business_hours = BusinessHoursWindow.from_env_values(
+            enabled=_parse_bool(env_get("WINDOW_ENABLED", default="true")),
+            days=env_get("WINDOW_DAYS", default="mon,tue,wed,thu,fri"),
+            start=env_get("WINDOW_START", default="09:00"),
+            end=env_get("WINDOW_END", default="18:00"),
+            timezone=env_get("WINDOW_TIMEZONE", default="America/Sao_Paulo"),
+        )
         return cls(
             webhook_url=webhook_url,
             http_timeout_seconds=timeout,
             log_level=log_level,
             log_format=log_format,
             log_file=log_file,
+            log_dir=log_dir,
             dedup_enabled=dedup_enabled,
             dedup_window_minutes=dedup_window_minutes,
             otrs_base_url=otrs_base_url,
@@ -106,4 +121,5 @@ class Settings:
             otrs_db_name=otrs_db_name,
             otrs_db_user=otrs_db_user,
             otrs_db_password=otrs_db_password,
+            business_hours=business_hours,
         )

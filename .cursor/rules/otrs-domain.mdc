@@ -6,5 +6,5 @@ alwaysApply: true
 # Domain pure
 
 - Entidades e services de dominio nao conhecem httpx, argparse ou Docker.
-- Validacoes de Ticket ficam no dominio.
+- Validacoes de Ticket e da janela comercial ficam no dominio.
 - Formatacao de payload de alerta e regra de dominio/aplicacao, nao de CLI.

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Nomes de config alinhados ao padrao corporativo: `GCHAT_WEBHOOK_URL` e `WINDOW_*` (sem aliases legados).
+- Log diario em `logs/otrs-gchat-YYYY-MM-DD.log` (`LOG_DIR`; tee de stdout/stderr); Docker monta `logs/` no host; `make app-clean` remove logs que nao sejam do dia atual.
+
 ## [1.2.0](https://github.com/victorhc-silveira-ilegra/otrs-webhook-google-chat/compare/v1.1.1...v1.2.0) (2026-08-12)
 
 ## [1.1.1](https://github.com/victorhc-silveira-ilegra/otrs-webhook-google-chat/compare/v1.1.0...v1.1.1) (2026-08-12)

@@ -88,7 +88,7 @@ COPY --from=python-runtime /opt/python /opt/python
 COPY --from=python-runtime /opt/notifier /opt/notifier
 ENV PATH="/opt/python/bin:${PATH}"
 ENV NOTIFIER_BIN=/opt/notifier/bin/otrs-gchat-alert
-ENV WEBHOOK_URL=http://mock-webhook:8080/v1/spaces/POC/messages
+ENV GCHAT_WEBHOOK_URL=http://mock-webhook:8080/v1/spaces/POC/messages
 ENV HTTP_TIMEOUT_SECONDS=10
 
 COPY infra/docker/otrs/apache-otrs.conf /etc/httpd/conf.d/otrs.conf

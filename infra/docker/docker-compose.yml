@@ -43,15 +43,18 @@ services:
     env_file:
       - ../../.env
     environment:
-      WEBHOOK_URL: ${WEBHOOK_URL}
+      GCHAT_WEBHOOK_URL: ${GCHAT_WEBHOOK_URL}
       HTTP_TIMEOUT_SECONDS: ${HTTP_TIMEOUT_SECONDS:-10}
       DEDUP_ENABLED: "true"
       DEDUP_WINDOW_MINUTES: ${DEDUP_WINDOW_MINUTES:-30}
+      LOG_DIR: /var/log/otrs-gchat
       OTRS_DB_HOST: mariadb
       OTRS_DB_PORT: "3306"
       OTRS_DB_NAME: otrs
       OTRS_DB_USER: otrs
       OTRS_DB_PASSWORD: otrssecret
+    volumes:
+      - ../../logs:/var/log/otrs-gchat
     depends_on:
       mariadb:
         condition: service_healthy
@@ -76,13 +79,15 @@ services:
       OTRS_DB_PASSWORD: otrssecret
       OTRS_ROOT_PASSWORD: "root@localhost"
       NOTIFIER_BIN: /opt/notifier/bin/otrs-gchat-alert
-      WEBHOOK_URL: ${WEBHOOK_URL}
+      GCHAT_WEBHOOK_URL: ${GCHAT_WEBHOOK_URL}
       HTTP_TIMEOUT_SECONDS: ${HTTP_TIMEOUT_SECONDS:-10}
       DEDUP_ENABLED: "true"
       DEDUP_WINDOW_MINUTES: ${DEDUP_WINDOW_MINUTES:-30}
+      LOG_DIR: /var/log/otrs-gchat
     volumes:
       - ./otrs/Kernel/System/Ticket/Event/GoogleChatAlert.pm:/opt/otrs/Kernel/System/Ticket/Event/GoogleChatAlert.pm:ro
       - ./otrs/Kernel/Config/Files/GoogleChatAlert.xml:/opt/otrs/Kernel/Config/Files/GoogleChatAlert.xml:ro
+      - ../../logs:/var/log/otrs-gchat
     depends_on:
       mariadb:
         condition: service_healthy

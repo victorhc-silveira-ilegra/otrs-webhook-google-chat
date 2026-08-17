@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 from collections.abc import Sequence
 
 from application.use_cases.process_alert import ProcessAlertResult, ProcessAlertUseCase
@@ -19,11 +20,12 @@ from infrastructure.logging import (
     ALERT_RUN_FAILED,
     ALERT_RUN_FINISHED,
     ALERT_RUN_SKIPPED_DUPLICATE,
+    ALERT_RUN_SKIPPED_OUTSIDE_HOURS,
     ALERT_RUN_STARTED,
     log_event,
     truncate_preview,
 )
-from presentation.logging import setup_logging
+from presentation.logging import attach_daily_stdio, resolve_log_timezone, setup_logging
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +48,11 @@ def run(argv: Sequence[str] | None = None) -> int:
     ticket_id: int | None = None
     try:
         settings = Settings.from_env()
+        if settings.log_dir is not None:
+            attach_daily_stdio(
+                settings.log_dir,
+                resolve_log_timezone(os.environ.get("WINDOW_TIMEZONE")),
+            )
         setup_logging(
             level=settings.log_level,
             log_format=settings.log_format,
@@ -79,12 +86,23 @@ def run(argv: Sequence[str] | None = None) -> int:
             formatter=AlertMessageFormatter(otrs_base_url=settings.otrs_base_url),
             dispatch_ledger=dispatch_ledger,
             dedup_window_minutes=settings.dedup_window_minutes,
+            business_hours=settings.business_hours,
         ).execute(ticket)
         if result is ProcessAlertResult.SKIPPED_DUPLICATE:
             log_event(
                 logger,
                 logging.INFO,
                 ALERT_RUN_SKIPPED_DUPLICATE,
+                ticket_id=ticket.ticket_id,
+                title=ticket.title,
+                queue=ticket.queue,
+            )
+            return 0
+        if result is ProcessAlertResult.SKIPPED_OUTSIDE_HOURS:
+            log_event(
+                logger,
+                logging.INFO,
+                ALERT_RUN_SKIPPED_OUTSIDE_HOURS,
                 ticket_id=ticket.ticket_id,
                 title=ticket.title,
                 queue=ticket.queue,

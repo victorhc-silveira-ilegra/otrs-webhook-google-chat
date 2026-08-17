@@ -16,8 +16,8 @@ if [[ ! -f "${ENV_FILE}" ]]; then
   exit 1
 fi
 
-if ! grep -Eq '^[[:space:]]*WEBHOOK_URL=.+' "${ENV_FILE}"; then
-  echo "WEBHOOK_URL ausente ou vazio no .env" >&2
+if ! grep -Eq '^[[:space:]]*GCHAT_WEBHOOK_URL=.+' "${ENV_FILE}"; then
+  echo "GCHAT_WEBHOOK_URL ausente ou vazio no .env" >&2
   exit 1
 fi
 
@@ -50,7 +50,7 @@ create_raw_ticket() {
   local title="$1"
   local line ticket_id ticket_number queue
   line="$(
-    "${COMPOSE[@]}" exec -T otrs perl /tmp/otrs-create-raw-ticket.pl "${title}" \
+    "${COMPOSE[@]}" exec -T -e WINDOW_ENABLED=false otrs perl /tmp/otrs-create-raw-ticket.pl "${title}" \
       | tr -d '\r' \
       | grep -E '^[0-9]+[[:space:]]' \
       | tail -n 1

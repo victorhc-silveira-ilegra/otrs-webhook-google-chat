@@ -13,13 +13,13 @@ def test_load_dotenv_file_sets_missing_keys(
 ) -> None:
     env_file = tmp_path / ".env"
     env_file.write_text(
-        "WEBHOOK_URL=https://example.test/hook\nLOG_LEVEL=DEBUG\n",
+        "SAMPLE_KEY=https://example.test/hook\nLOG_LEVEL=DEBUG\n",
         encoding="utf-8",
     )
-    monkeypatch.delenv("WEBHOOK_URL", raising=False)
+    monkeypatch.delenv("SAMPLE_KEY", raising=False)
     monkeypatch.delenv("LOG_LEVEL", raising=False)
     load_dotenv_file(env_file, override=False)
-    assert os.environ["WEBHOOK_URL"] == "https://example.test/hook"
+    assert os.environ["SAMPLE_KEY"] == "https://example.test/hook"
     assert os.environ["LOG_LEVEL"] == "DEBUG"
 
 
@@ -27,10 +27,10 @@ def test_load_dotenv_file_does_not_override_existing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     env_file = tmp_path / ".env"
-    env_file.write_text("WEBHOOK_URL=https://from-file/hook\n", encoding="utf-8")
-    monkeypatch.setenv("WEBHOOK_URL", "https://from-env/hook")
+    env_file.write_text("SAMPLE_KEY=https://from-file/hook\n", encoding="utf-8")
+    monkeypatch.setenv("SAMPLE_KEY", "https://from-env/hook")
     load_dotenv_file(env_file, override=False)
-    assert os.environ["WEBHOOK_URL"] == "https://from-env/hook"
+    assert os.environ["SAMPLE_KEY"] == "https://from-env/hook"
 
 
 def test_load_dotenv_file_override_replaces_existing(
@@ -38,12 +38,12 @@ def test_load_dotenv_file_override_replaces_existing(
 ) -> None:
     env_file = tmp_path / ".env"
     env_file.write_text(
-        'WEBHOOK_URL="https://from-file/hook"\n# comment\n\n=bad\n',
+        'SAMPLE_KEY="https://from-file/hook"\n# comment\n\n=bad\n',
         encoding="utf-8",
     )
-    monkeypatch.setenv("WEBHOOK_URL", "https://from-env/hook")
+    monkeypatch.setenv("SAMPLE_KEY", "https://from-env/hook")
     load_dotenv_file(env_file, override=True)
-    assert os.environ["WEBHOOK_URL"] == "https://from-file/hook"
+    assert os.environ["SAMPLE_KEY"] == "https://from-file/hook"
 
 
 def test_load_dotenv_file_missing_path(tmp_path: Path) -> None:
@@ -55,16 +55,16 @@ def test_load_project_dotenv_finds_env_in_parents(
 ) -> None:
     env_file = tmp_path / ".env"
     env_file.write_text(
-        "WEBHOOK_URL=https://ci-dotenv/hook\n",
+        "SAMPLE_KEY=https://ci-dotenv/hook\n",
         encoding="utf-8",
     )
     start = tmp_path / "pkg" / "nested" / "mod.py"
     start.parent.mkdir(parents=True)
     start.write_text("x = 1\n", encoding="utf-8")
-    monkeypatch.delenv("WEBHOOK_URL", raising=False)
+    monkeypatch.delenv("SAMPLE_KEY", raising=False)
     found = load_project_dotenv(override=True, start=start)
     assert found == env_file
-    assert os.environ["WEBHOOK_URL"] == "https://ci-dotenv/hook"
+    assert os.environ["SAMPLE_KEY"] == "https://ci-dotenv/hook"
 
 
 def test_load_project_dotenv_returns_none_without_file(tmp_path: Path) -> None:

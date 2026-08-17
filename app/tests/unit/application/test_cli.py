@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -36,6 +37,14 @@ def _reset_logging() -> None:
     reset_logging_state()
 
 
+@pytest.fixture(autouse=True)
+def _stub_daily_stdio(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "presentation.cli.main.attach_daily_stdio",
+        lambda *args, **kwargs: None,
+    )
+
+
 def _cli_args() -> list[str]:
     return [
         "--ticket-id",
@@ -69,9 +78,10 @@ def test_run_success_emits_semantic_events(
             ticket_id=kwargs.get("ticket_id"),
         )
 
-    monkeypatch.setenv("WEBHOOK_URL", "http://mock-webhook:8080/hook")
+    monkeypatch.setenv("GCHAT_WEBHOOK_URL", "http://mock-webhook:8080/hook")
     monkeypatch.setenv("LOG_LEVEL", "INFO")
     monkeypatch.setenv("DEDUP_ENABLED", "false")
+    monkeypatch.setenv("WINDOW_ENABLED", "false")
     monkeypatch.setattr("presentation.cli.main.setup_logging", lambda **_: None)
     monkeypatch.setattr(
         "presentation.cli.main.GoogleChatWebhookAdapter",
@@ -93,6 +103,69 @@ def test_run_success_emits_semantic_events(
     assert "alert.run.finished" in events
 
 
+def test_run_attaches_daily_stdio(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_attach(directory: Path, timezone: object, **kwargs: object) -> None:
+        captured["directory"] = directory
+        captured["timezone"] = timezone
+
+    class _UseCase:
+        def __init__(self, **kwargs: Any) -> None:
+            return None
+
+        def execute(self, ticket: Any) -> ProcessAlertResult:
+            return ProcessAlertResult.SKIPPED_DUPLICATE
+
+    monkeypatch.setenv("GCHAT_WEBHOOK_URL", "http://mock-webhook:8080/hook")
+    monkeypatch.setenv("DEDUP_ENABLED", "false")
+    monkeypatch.setenv("WINDOW_ENABLED", "false")
+    monkeypatch.setenv("LOG_DIR", str(tmp_path))
+    monkeypatch.setenv("WINDOW_TIMEZONE", "UTC")
+    monkeypatch.setattr("presentation.cli.main.attach_daily_stdio", fake_attach)
+    monkeypatch.setattr("presentation.cli.main.setup_logging", lambda **_: None)
+    monkeypatch.setattr("presentation.cli.main.ProcessAlertUseCase", _UseCase)
+    monkeypatch.setattr(
+        "presentation.cli.main.GoogleChatWebhookAdapter",
+        lambda **kwargs: object(),
+    )
+    assert run(_cli_args()) == 0
+    assert captured["directory"] == tmp_path
+
+
+def test_run_skips_daily_stdio_when_log_dir_blank(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    called = False
+
+    def fake_attach(*args: Any, **kwargs: Any) -> None:
+        nonlocal called
+        called = True
+
+    class _UseCase:
+        def __init__(self, **kwargs: Any) -> None:
+            return None
+
+        def execute(self, ticket: Any) -> ProcessAlertResult:
+            return ProcessAlertResult.SKIPPED_DUPLICATE
+
+    monkeypatch.setenv("GCHAT_WEBHOOK_URL", "http://mock-webhook:8080/hook")
+    monkeypatch.setenv("DEDUP_ENABLED", "false")
+    monkeypatch.setenv("WINDOW_ENABLED", "false")
+    monkeypatch.setenv("LOG_DIR", "")
+    monkeypatch.setattr("presentation.cli.main.attach_daily_stdio", fake_attach)
+    monkeypatch.setattr("presentation.cli.main.setup_logging", lambda **_: None)
+    monkeypatch.setattr("presentation.cli.main.ProcessAlertUseCase", _UseCase)
+    monkeypatch.setattr(
+        "presentation.cli.main.GoogleChatWebhookAdapter",
+        lambda **kwargs: object(),
+    )
+    assert run(_cli_args()) == 0
+    assert called is False
+
+
 def test_run_skips_duplicate(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
@@ -103,8 +176,9 @@ def test_run_skips_duplicate(
         def execute(self, ticket: Any) -> ProcessAlertResult:
             return ProcessAlertResult.SKIPPED_DUPLICATE
 
-    monkeypatch.setenv("WEBHOOK_URL", "http://mock-webhook:8080/hook")
+    monkeypatch.setenv("GCHAT_WEBHOOK_URL", "http://mock-webhook:8080/hook")
     monkeypatch.setenv("DEDUP_ENABLED", "false")
+    monkeypatch.setenv("WINDOW_ENABLED", "false")
     monkeypatch.setattr("presentation.cli.main.setup_logging", lambda **_: None)
     monkeypatch.setattr(
         "presentation.cli.main.GoogleChatWebhookAdapter",
@@ -118,6 +192,38 @@ def test_run_skips_duplicate(
     assert code == 0
     assert any(
         getattr(record, "semantic", {}).get("event") == ALERT_RUN_SKIPPED_DUPLICATE
+        for record in caplog.records
+        if hasattr(record, "semantic")
+    )
+
+
+def test_run_skips_outside_business_hours(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    class ClosedHoursUseCase:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            pass
+
+        def execute(self, ticket: Any) -> ProcessAlertResult:
+            return ProcessAlertResult.SKIPPED_OUTSIDE_HOURS
+
+    monkeypatch.setenv("GCHAT_WEBHOOK_URL", "http://mock-webhook:8080/hook")
+    monkeypatch.setenv("DEDUP_ENABLED", "false")
+    monkeypatch.setenv("WINDOW_ENABLED", "true")
+    monkeypatch.setattr("presentation.cli.main.setup_logging", lambda **_: None)
+    monkeypatch.setattr(
+        "presentation.cli.main.GoogleChatWebhookAdapter",
+        lambda *args, **kwargs: object(),
+    )
+    monkeypatch.setattr("presentation.cli.main.ProcessAlertUseCase", ClosedHoursUseCase)
+
+    with caplog.at_level(logging.INFO):
+        code = run(_cli_args())
+
+    assert code == 0
+    assert any(
+        getattr(record, "semantic", {}).get("event")
+        == "alert.run.skipped_outside_hours"
         for record in caplog.records
         if hasattr(record, "semantic")
     )
@@ -146,13 +252,14 @@ def test_run_wires_dispatch_ledger_when_enabled(
         def release(self, **kwargs: Any) -> None:
             return None
 
-    monkeypatch.setenv("WEBHOOK_URL", "http://mock-webhook:8080/hook")
+    monkeypatch.setenv("GCHAT_WEBHOOK_URL", "http://mock-webhook:8080/hook")
     monkeypatch.setenv("DEDUP_ENABLED", "true")
     monkeypatch.setenv("DEDUP_WINDOW_MINUTES", "15")
     monkeypatch.setenv("OTRS_DB_HOST", "mariadb")
     monkeypatch.setenv("OTRS_DB_NAME", "otrs")
     monkeypatch.setenv("OTRS_DB_USER", "otrs")
     monkeypatch.setenv("OTRS_DB_PASSWORD", "otrssecret")
+    monkeypatch.setenv("WINDOW_ENABLED", "false")
     monkeypatch.setattr("presentation.cli.main.setup_logging", lambda **_: None)
     monkeypatch.setattr(
         "presentation.cli.main.GoogleChatWebhookAdapter",
@@ -175,7 +282,7 @@ def test_run_wires_dispatch_ledger_when_enabled(
 def test_run_returns_error_without_webhook(
     monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
 ) -> None:
-    monkeypatch.delenv("WEBHOOK_URL", raising=False)
+    monkeypatch.delenv("GCHAT_WEBHOOK_URL", raising=False)
     with caplog.at_level(logging.ERROR):
         code = run(_cli_args())
     assert code == 1
@@ -187,7 +294,7 @@ def test_run_returns_error_without_webhook(
 
 
 def test_run_returns_error_on_invalid_ticket(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("WEBHOOK_URL", "http://mock-webhook:8080/hook")
+    monkeypatch.setenv("GCHAT_WEBHOOK_URL", "http://mock-webhook:8080/hook")
     monkeypatch.setattr("presentation.cli.main.setup_logging", lambda **_: None)
     code = run(
         [
@@ -212,8 +319,9 @@ def test_run_returns_error_on_webhook_failure(monkeypatch: pytest.MonkeyPatch) -
         def send(self, payload: dict[str, Any]) -> None:
             raise WebhookDeliveryError("webhook down")
 
-    monkeypatch.setenv("WEBHOOK_URL", "http://mock-webhook:8080/hook")
+    monkeypatch.setenv("GCHAT_WEBHOOK_URL", "http://mock-webhook:8080/hook")
     monkeypatch.setenv("DEDUP_ENABLED", "false")
+    monkeypatch.setenv("WINDOW_ENABLED", "false")
     monkeypatch.setattr("presentation.cli.main.setup_logging", lambda **_: None)
     monkeypatch.setattr(
         "presentation.cli.main.GoogleChatWebhookAdapter",

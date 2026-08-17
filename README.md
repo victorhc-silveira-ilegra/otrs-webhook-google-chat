@@ -35,7 +35,7 @@ Layout operacional com `app/`, `Makefile`, `clean_workspace` e `linters/`.
 
 ```bash
 cp .env.example .env
-# edite WEBHOOK_URL (e demais vars)
+# edite GCHAT_WEBHOOK_URL (e demais vars)
 make app-setup
 ```
 

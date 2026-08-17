@@ -8,7 +8,9 @@ Layout operacional da PoC OTRS (`app/`, `infra/`, `linters/`, `docs/`).
 │   ├── src/
 │   │   ├── domain/
 │   │   │   ├── entities/ticket.py
-│   │   │   └── services/alert_message_formatter.py
+│   │   │   └── services/
+│   │   │       ├── alert_message_formatter.py
+│   │   │       └── business_hours.py
 │   │   ├── application/
 │   │   │   ├── ports/
 │   │   │   │   ├── notifier.py
@@ -29,6 +31,7 @@ Layout operacional da PoC OTRS (`app/`, `infra/`, `linters/`, `docs/`).
 │   │       ├── cli/main.py
 │   │       └── logging/
 │   │           ├── config.py
+│   │           ├── daily.py
 │   │           └── formatters.py
 │   ├── tests/
 │   │   ├── unit/
@@ -44,6 +47,7 @@ Layout operacional da PoC OTRS (`app/`, `infra/`, `linters/`, `docs/`).
 │   ├── requirements.txt
 │   └── requirements-dev.txt
 ├── docs/
+├── logs/ (.gitkeep; `otrs-gchat-YYYY-MM-DD.log` no host, ignorado pelo git)
 ├── infra/docker/
 │   ├── docker-compose.yml
 │   ├── mariadb/init.sql

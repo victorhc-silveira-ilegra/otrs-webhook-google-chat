@@ -30,7 +30,7 @@ help:
 	@echo -e "$(YELLOW)Python:$(RESET) $(PYTHON)"
 	@echo -e ""
 	@echo -e "$(YELLOW)App:$(RESET)"
-	@echo -e "  $(GREEN)app-run$(RESET)            - Executa CLI (requer WEBHOOK_URL)"
+	@echo -e "  $(GREEN)app-run$(RESET)            - Executa CLI (requer GCHAT_WEBHOOK_URL)"
 	@echo -e "  $(GREEN)app-test$(RESET)           - Testes + cobertura 100%"
 	@echo -e "  $(GREEN)app-lint$(RESET)           - Lint / format / mypy / vulture"
 	@echo -e "  $(GREEN)app-security$(RESET)       - Bandit + pip-audit"
