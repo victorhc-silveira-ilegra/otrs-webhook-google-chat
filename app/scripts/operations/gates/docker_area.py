@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from operations.gates.common import (
     DOCKER_DIR,
     REPO_ROOT,
@@ -22,10 +24,19 @@ _REQUIRED = (
 )
 
 
-def _compose_cmd() -> list[str]:
+def _resolve_env_file() -> Path:
     env_file = REPO_ROOT / ".env"
-    if not env_file.is_file():
-        env_file = REPO_ROOT / ".env.example"
+    if env_file.is_file():
+        return env_file
+    example = REPO_ROOT / ".env.example"
+    if example.is_file():
+        return example
+    print("\n[ERRO] Nenhum .env ou .env.example na raiz do repositorio")
+    raise SystemExit(1)
+
+
+def _compose_cmd() -> list[str]:
+    env_file = _resolve_env_file()
     return [
         "docker",
         "compose",

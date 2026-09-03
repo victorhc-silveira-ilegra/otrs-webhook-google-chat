@@ -81,6 +81,7 @@ Fakes/Mocks: `FakeNotifier`, `FakeDispatchLedger`, `httpx` transport, `pymysql.c
 ## Config e segredos
 
 - `.env` na raiz (gitignored); template em `.env.example`
+- Compose: `env_file` de `.env` e opcional (`required: false`) para o CI usar so `.env.example` na interpolacao.
 - Compose: `docker compose --env-file .env ...`
 - Python: `load_project_dotenv(override=True)` em `Settings.from_env()`
 - Nunca commitar `GCHAT_WEBHOOK_URL` real

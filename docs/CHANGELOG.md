@@ -4,6 +4,7 @@
 
 ## Unreleased
 
+- Fix: gate Docker no CI aceita ausencia de `.env` (`env_file` opcional + fallback `.env.example`).
 - Pre-commit espelha a matriz CI (Python/Docker/GitHub/Scripts + stages crash-first; `fail_fast`; commitlint primeiro).
 - CI/CD em matriz por area (Python, Docker, GitHub, Scripts) com stages crash-first e release semantica.
 - Nomes de config alinhados ao padrao corporativo: `GCHAT_WEBHOOK_URL` e `WINDOW_*` (sem aliases legados).

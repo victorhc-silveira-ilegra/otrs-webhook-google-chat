@@ -63,7 +63,7 @@ python app/scripts/operations/clean_workspace.py --area docker --stage build
 | Area | Lint | Seguranca | Testes | Validate | Build |
 |------|------|-----------|--------|----------|-------|
 | python | Ruff, mypy, vulture, limite 300 | Bandit, pip-audit (+ Gitleaks no job) | pytest cov 100% | `pip install -e` + import | `python -m build` |
-| docker | Hadolint (`infra/docker/.hadolint.yaml`) | Trivy config/fs | `compose config --quiet` | arquivos + compose | build da imagem **notifier** |
+| docker | Hadolint (`infra/docker/.hadolint.yaml`) | Trivy config/fs | `compose config --quiet` (`.env` ou `.env.example`) | arquivos + compose | build da imagem **notifier** |
 | github | actionlint | Gitleaks em `.github` | actionlint | estrutura de actions | diretorios ci/shared |
 | scripts | `bash -n` + `make -n help` | grep de segredos | `make help` | scripts do Makefile | sintaxe shell |
 

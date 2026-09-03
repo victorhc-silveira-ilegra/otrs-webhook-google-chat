@@ -41,7 +41,8 @@ services:
     container_name: otrs-notifier
     restart: unless-stopped
     env_file:
-      - ../../.env
+      - path: ../../.env
+        required: false
     environment:
       GCHAT_WEBHOOK_URL: ${GCHAT_WEBHOOK_URL}
       HTTP_TIMEOUT_SECONDS: ${HTTP_TIMEOUT_SECONDS:-10}
@@ -70,7 +71,8 @@ services:
     ports:
       - "8081:80"
     env_file:
-      - ../../.env
+      - path: ../../.env
+        required: false
     environment:
       OTRS_DB_HOST: mariadb
       OTRS_DB_PORT: "3306"
