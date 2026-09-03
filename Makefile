@@ -60,20 +60,20 @@ app-install:
 	$(PYTHON) -m pip install -e $(APP_DIR)
 
 app-lint:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage lint
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage lint
 
 app-test:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage test
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage test
 
 app-security:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage security
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage security
 
 app-run:
 	$(PYTHON) run.py --ticket-id $${TICKET_ID:-1} --ticket-number $${TICKET_NUMBER:-20260812000001} --title "$${TITLE:-PoC alerta}" --queue "$${QUEUE:-Raw}"
 
 app-pre-commit:
 	bash linters/git-hooks/install.sh
-	chmod +x linters/git-hooks/bin/resolve_venv_python.sh linters/git-hooks/bin/python linters/git-hooks/bin/pre-commit
+	chmod +x linters/git-hooks/bin/resolve_venv_python.sh linters/git-hooks/bin/python linters/git-hooks/bin/pre-commit linters/git-hooks/commitlint.sh linters/git-hooks/commit-msg linters/git-hooks/gitleaks.sh
 
 app-pre-commit-run:
 	$(PYTHON) -m pre_commit run --all-files -c .pre-commit-config.yaml
@@ -82,7 +82,7 @@ app-setup:
 	bash app/scripts/setup.sh
 
 app-clean:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage clean
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage clean
 
 docker-up:
 	@test -f .env || cp .env.example .env

@@ -55,7 +55,7 @@ Ports sao `typing.Protocol` (sem ABC).
 | `make app-security` | bandit + pip-audit |
 | `make app-pre-commit-run` | hooks em todos os arquivos |
 
-Orquestrador: `app/scripts/operations/clean_workspace.py`.
+Orquestrador: `app/scripts/operations/clean_workspace.py` (`--area python|docker|github|scripts` + `--stage`). Detalhes: [devops.md](devops.md).
 
 Convencoes:
 

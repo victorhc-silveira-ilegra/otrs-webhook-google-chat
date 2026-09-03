@@ -23,6 +23,7 @@ Layout operacional com `app/`, `Makefile`, `clean_workspace` e `linters/`.
 | [docs/engineering-python.md](docs/engineering-python.md) | Engenharia do servico Python |
 | [docs/engineering-logging.md](docs/engineering-logging.md) | Eventos semanticos e anti-poluicao |
 | [docs/infra-docker.md](docs/infra-docker.md) | Compose, schema, Event Module |
+| [docs/devops.md](docs/devops.md) | CI/CD matriz por area e release |
 
 ## Requisitos
 
@@ -90,9 +91,11 @@ Detalhes em [docs/infra-docker.md](docs/infra-docker.md).
 
 ## CI
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml):
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) e [docs/devops.md](docs/devops.md):
 
-- jobs paralelos: lint, test, security (actions compostas)
-- job `release` (semantic-release) apos qualidade em `main`
-- tags sincronizadas via `.github/actions/sync-tags`
+- jobs paralelos por area: Python, Docker, GitHub, Scripts (stages crash-first)
+- pre-commit local espelha a mesma matriz (`fail_fast`; ver [linters/README.md](linters/README.md))
+- job `release` (semantic-release) apos gates em `main`
+- job de resumo no GitHub Summary
+- marcador `[skip-cd]` pula a release
 - changelog em [`docs/CHANGELOG.md`](docs/CHANGELOG.md)

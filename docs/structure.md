@@ -42,12 +42,17 @@ Layout operacional da PoC OTRS (`app/`, `infra/`, `linters/`, `docs/`).
 │   │   └── integration/
 │   ├── scripts/
 │   │   ├── setup.sh
-│   │   └── operations/clean_workspace.py
+│   │   └── operations/
+│   │       ├── clean_workspace.py
+│   │       └── gates/
 │   ├── pyproject.toml
 │   ├── requirements.txt
 │   └── requirements-dev.txt
 ├── docs/
 ├── logs/ (.gitkeep; `otrs-gchat-YYYY-MM-DD.log` no host, ignorado pelo git)
+├── .github/
+│   ├── workflows/ci.yml
+│   └── actions/{ci,shared}/
 ├── infra/docker/
 │   ├── docker-compose.yml
 │   ├── mariadb/init.sql

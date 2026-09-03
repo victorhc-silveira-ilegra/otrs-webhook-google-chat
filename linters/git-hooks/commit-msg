@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
 set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-cd "${REPO_ROOT}"
-MSG_FILE="${1:-}"
-exec npx --yes -p @commitlint/cli -p @commitlint/config-conventional commitlint --config linters/commitlint.config.mjs --edit "${MSG_FILE}"
+exec bash "${REPO_ROOT}/linters/git-hooks/commitlint.sh" "${1:-}"

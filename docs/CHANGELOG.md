@@ -4,6 +4,8 @@
 
 ## Unreleased
 
+- Pre-commit espelha a matriz CI (Python/Docker/GitHub/Scripts + stages crash-first; `fail_fast`; commitlint primeiro).
+- CI/CD em matriz por area (Python, Docker, GitHub, Scripts) com stages crash-first e release semantica.
 - Nomes de config alinhados ao padrao corporativo: `GCHAT_WEBHOOK_URL` e `WINDOW_*` (sem aliases legados).
 - Log diario em `logs/otrs-gchat-YYYY-MM-DD.log` (`LOG_DIR`; tee de stdout/stderr); Docker monta `logs/` no host; `make app-clean` remove logs que nao sejam do dia atual.
 

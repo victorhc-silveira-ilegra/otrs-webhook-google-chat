@@ -5,7 +5,8 @@ alwaysApply: true
 
 # Engineering
 
-- Gates: lint, test, security, clean via `clean_workspace.py`.
+- Gates: lint, test, security, validate, build, clean via `clean_workspace.py --area`.
 - Limite de 300 linhas por arquivo em `app/src`.
 - Sem Conda; runtime e `.venv` em Linux nativo.
-- Hooks em `linters/git-hooks` + `.pre-commit-config.yaml`.
+- Hooks em `linters/git-hooks` + `.pre-commit-config.yaml` (`fail_fast`; matriz igual ao CI; commitlint primeiro).
+- CI matriz: Python, Docker, GitHub, Scripts ([docs/devops.md](docs/devops.md)).

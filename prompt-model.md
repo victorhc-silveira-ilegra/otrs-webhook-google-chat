@@ -131,7 +131,7 @@ Imports da aplicacao devem ser limpos (sem prefixo desnecessario tipo `app.src`)
 | Hooks | pre-commit + commit-msg (Conventional Commits) |
 | Make | `app-install`, `app-lint`, `app-test`, `app-security`, `app-clean`, `app-setup` |
 
-Orquestrador central (neste repo: `app/scripts/operations/clean_workspace.py`) deve ser o unico ponto chamado pelo Makefile para lint/test/security/clean.
+Orquestrador central (neste repo: `app/scripts/operations/clean_workspace.py`) deve ser o unico ponto chamado pelo Makefile e pelo CI para lint/test/security/validate/build/clean, com `--area` por tecnologia.
 
 ### Mapa de ferramentas (referencia → equivalentes)
 
