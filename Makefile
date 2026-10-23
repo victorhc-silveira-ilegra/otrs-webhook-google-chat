@@ -20,11 +20,7 @@ RESET  := \033[0m
 .PHONY: help \
 	app-install app-run app-pre-commit app-pre-commit-run app-setup app-clean \
 	app-lint app-security app-test app-tests app-validate app-build \
-	python-lint python-security python-test python-tests python-validate python-build python-clean \
-	docker-lint docker-security docker-test docker-tests docker-validate docker-build \
-	docker-up docker-down docker-ps docker-logs docker-sh docker-smoke docker-health docker-restart docker-clean docker-rebuild \
-	github-lint github-security github-test github-tests github-validate github-build \
-	scripts-lint scripts-security scripts-test scripts-tests scripts-validate scripts-build
+	docker-up docker-down docker-ps docker-logs docker-sh docker-smoke docker-health docker-restart docker-clean docker-rebuild
 
 help:
 	@echo -e "$(BLUE)========================================================================$(RESET)"
@@ -42,33 +38,12 @@ help:
 	@echo -e "  $(GREEN)app-pre-commit$(RESET)     - Instala hooks (matriz CI, fail_fast)"
 	@echo -e "  $(GREEN)app-pre-commit-run$(RESET) - Roda hooks em todos os arquivos"
 	@echo -e ""
-	@echo -e "$(YELLOW)CI/CD - Python (App):$(RESET)"
-	@echo -e "  $(GREEN)app-lint$(RESET)           - Python | Lint (ruff/mypy/vulture/300 linhas)"
-	@echo -e "  $(GREEN)app-security$(RESET)       - Python | Seguranca (bandit/pip-audit/gitleaks)"
-	@echo -e "  $(GREEN)app-test$(RESET)           - Python | Testes + cobertura 100% (ou app-tests)"
-	@echo -e "  $(GREEN)app-validate$(RESET)       - Python | Validate (pip install -e + smoke import)"
-	@echo -e "  $(GREEN)app-build$(RESET)          - Python | Build (python -m build)"
-	@echo -e ""
-	@echo -e "$(YELLOW)CI/CD - Docker:$(RESET)"
-	@echo -e "  $(GREEN)docker-lint$(RESET)        - Docker | Lint (hadolint)"
-	@echo -e "  $(GREEN)docker-security$(RESET)    - Docker | Seguranca (trivy config/fs)"
-	@echo -e "  $(GREEN)docker-test$(RESET)        - Docker | Testes (compose config; ou docker-tests)"
-	@echo -e "  $(GREEN)docker-validate$(RESET)    - Docker | Validate (arquivos + compose config)"
-	@echo -e "  $(GREEN)docker-build$(RESET)       - Docker | Build (imagem otrs-notifier:ci)"
-	@echo -e ""
-	@echo -e "$(YELLOW)CI/CD - GitHub:$(RESET)"
-	@echo -e "  $(GREEN)github-lint$(RESET)        - GitHub | Lint (actionlint)"
-	@echo -e "  $(GREEN)github-security$(RESET)    - GitHub | Seguranca (gitleaks + secrets scan)"
-	@echo -e "  $(GREEN)github-test$(RESET)        - GitHub | Testes (actionlint; ou github-tests)"
-	@echo -e "  $(GREEN)github-validate$(RESET)    - GitHub | Validate (estrutura de actions)"
-	@echo -e "  $(GREEN)github-build$(RESET)       - GitHub | Build (diretorios ci/shared/workflows)"
-	@echo -e ""
-	@echo -e "$(YELLOW)CI/CD - Scripts:$(RESET)"
-	@echo -e "  $(GREEN)scripts-lint$(RESET)       - Scripts | Lint (bash -n + make -n help)"
-	@echo -e "  $(GREEN)scripts-security$(RESET)   - Scripts | Seguranca (secrets scan)"
-	@echo -e "  $(GREEN)scripts-test$(RESET)       - Scripts | Testes (make help; ou scripts-tests)"
-	@echo -e "  $(GREEN)scripts-validate$(RESET)   - Scripts | Validate (scripts obrigatorios)"
-	@echo -e "  $(GREEN)scripts-build$(RESET)      - Scripts | Build (sintaxe shell)"
+	@echo -e "$(YELLOW)Qualidade (CI/CD — Python + Docker + GitHub + Scripts):$(RESET)"
+	@echo -e "  $(GREEN)app-lint$(RESET)           - Lint de tudo (Python, Docker, GitHub, Scripts)"
+	@echo -e "  $(GREEN)app-security$(RESET)       - Seguranca de tudo (Bandit, pip-audit, Gitleaks, Trivy, secrets)"
+	@echo -e "  $(GREEN)app-test$(RESET)           - Testes de tudo + cobertura 100% (ou app-tests)"
+	@echo -e "  $(GREEN)app-validate$(RESET)       - Validate de tudo (Python, Docker, GitHub, Scripts)"
+	@echo -e "  $(GREEN)app-build$(RESET)          - Build de tudo (Python, Docker, GitHub, Scripts)"
 	@echo -e ""
 	@echo -e "$(YELLOW)Docker (Runtime):$(RESET)"
 	@echo -e "  $(GREEN)docker-up$(RESET)          - Sobe OTRS + MariaDB + WireMock + notifier"
@@ -89,68 +64,23 @@ app-install:
 	$(PYTHON) -m pip install -r $(APP_DIR)/requirements.txt -r $(APP_DIR)/requirements-dev.txt
 	$(PYTHON) -m pip install -e $(APP_DIR)
 
-app-lint python-lint:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage lint
+app-lint:
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage lint
 
-app-security python-security:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage security
+app-security:
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage security
 
-app-test app-tests python-test python-tests:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage test
+app-test app-tests:
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage test
 
-app-validate python-validate:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage validate
+app-validate:
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage validate
 
-app-build python-build:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage build
+app-build:
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage build
 
-app-clean python-clean:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area python --stage clean
-
-docker-lint:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area docker --stage lint
-
-docker-security:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area docker --stage security
-
-docker-test docker-tests:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area docker --stage test
-
-docker-validate:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area docker --stage validate
-
-docker-build:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area docker --stage build
-
-github-lint:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area github --stage lint
-
-github-security:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area github --stage security
-
-github-test github-tests:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area github --stage test
-
-github-validate:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area github --stage validate
-
-github-build:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area github --stage build
-
-scripts-lint:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area scripts --stage lint
-
-scripts-security:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area scripts --stage security
-
-scripts-test scripts-tests:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area scripts --stage test
-
-scripts-validate:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area scripts --stage validate
-
-scripts-build:
-	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --area scripts --stage build
+app-clean:
+	$(PYTHON) $(APP_DIR)/scripts/operations/clean_workspace.py --stage clean
 
 app-run:
 	$(PYTHON) run.py --ticket-id $${TICKET_ID:-1} --ticket-number $${TICKET_NUMBER:-20260812000001} --title "$${TITLE:-PoC alerta}" --queue "$${QUEUE:-Raw}"

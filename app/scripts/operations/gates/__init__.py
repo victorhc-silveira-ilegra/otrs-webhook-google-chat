@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 from collections.abc import Callable
+from pathlib import Path
 
 from operations.gates import docker_area, github_area, python_area, scripts_area
 
@@ -63,3 +65,20 @@ def run_area_stage(
         handler(light=light_clean)
         return
     handler()
+
+
+def run_all_areas_stage(
+    stage: str,
+    *,
+    coverage_fail_under: int = 100,
+    app_root: Path,
+) -> None:
+    repo_root = app_root.parent
+    for area in AREAS:
+        print(f"\n==================== [{area.upper()} | {stage.upper()}] ====================")
+        os.chdir(app_root if area == "python" else repo_root)
+        run_area_stage(
+            area,
+            stage,
+            coverage_fail_under=coverage_fail_under,
+        )

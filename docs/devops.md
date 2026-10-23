@@ -74,12 +74,15 @@ python app/scripts/operations/clean_workspace.py --area <python|docker|github|sc
 
 ## Comandos manuais no `Makefile`
 
-| Categoria | Lint | Seguranca | Testes | Validate | Build |
-|-----------|------|-----------|--------|----------|-------|
-| Python (App) | `make app-lint` (`python-lint`) | `make app-security` (`python-security`) | `make app-test` / `make app-tests` (`python-test` / `python-tests`) | `make app-validate` (`python-validate`) | `make app-build` (`python-build`) |
-| Docker | `make docker-lint` | `make docker-security` | `make docker-test` / `make docker-tests` | `make docker-validate` | `make docker-build` |
-| GitHub | `make github-lint` | `make github-security` | `make github-test` / `make github-tests` | `make github-validate` | `make github-build` |
-| Scripts | `make scripts-lint` | `make scripts-security` | `make scripts-test` / `make scripts-tests` | `make scripts-validate` | `make scripts-build` |
+Os comandos `make app-*` executam o respectivo estágio em **todas** as categorias (`Python` + `Docker` + `GitHub` + `Scripts`):
+
+| Estagio | Comando | Escopo |
+|---------|---------|--------|
+| Lint | `make app-lint` | Lint de tudo (`python`, `docker`, `github`, `scripts`) |
+| Seguranca | `make app-security` | Seguranca de tudo (`python`, `docker`, `github`, `scripts`) |
+| Testes | `make app-test` (`make app-tests`) | Testes de tudo (`python`, `docker`, `github`, `scripts`) |
+| Validate | `make app-validate` | Validate de tudo (`python`, `docker`, `github`, `scripts`) |
+| Build | `make app-build` | Build de tudo (`python`, `docker`, `github`, `scripts`) |
 
 ## Pre-commit
 

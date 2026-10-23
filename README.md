@@ -64,7 +64,7 @@ make app-build
 make app-clean
 ```
 
-Comandos por categoria (`app-*` / `python-*`, `docker-*`, `github-*`, `scripts-*` nos estagios `lint`, `security`, `test`/`tests`, `validate`, `build`): consulte `make help` e [docs/devops.md](docs/devops.md).
+Cada comando `make app-<stage>` executa o estágio em todas as categorias (`Python`, `Docker`, `GitHub`, `Scripts`). Consulte `make help` e [docs/devops.md](docs/devops.md).
 
 Cobertura minima: 100%. Commits: Conventional Commits (`linters/commitlint.config.mjs`).
 
