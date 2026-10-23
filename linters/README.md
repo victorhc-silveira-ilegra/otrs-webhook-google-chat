@@ -4,11 +4,11 @@
 
 `fail_fast: true`. Mesmas areas e stages do [`.github/workflows/ci.yml`](../.github/workflows/ci.yml):
 
-1. Commitlint (local; tambem no stage `commit-msg`)
-2. Python: Lint → Seguranca → Gitleaks → Testes → Validate → Build
-3. Docker: Lint → Seguranca → Testes → Validate → Build
-4. GitHub: Lint → Seguranca → Testes → Validate → Build
-5. Scripts: Lint → Seguranca → Testes → Validate → Build
+1. `Commitlint (Conventional Commits)` (local; tambem no stage `commit-msg`)
+2. `Python`: `Lint` → `Seguranca` → `Testes` → `Validate` → `Build`
+3. `Docker`: `Lint` → `Seguranca` → `Testes` → `Validate` → `Build`
+4. `GitHub`: `Lint` → `Seguranca` → `Testes` → `Validate` → `Build`
+5. `Scripts`: `Lint` → `Seguranca` → `Testes` → `Validate` → `Build`
 
 Ferramentas extras (como no CI): `npx` (commitlint), `gitleaks`, `hadolint`, `trivy`, `actionlint`, `docker`.
 
@@ -34,5 +34,5 @@ Config: [`commitlint.config.mjs`](commitlint.config.mjs)
 
 ## CI seguranca (binario, fora do pip)
 
-- **gitleaks** — job Python e area GitHub; hook local [`git-hooks/gitleaks.sh`](git-hooks/gitleaks.sh)
+- **gitleaks** — integrado diretamente em `clean_workspace.py --area python --stage security` (`gitleaks detect --source . --verbose --redact`) e `--area github --stage security`
 - Config: [`.gitleaks.toml`](../.gitleaks.toml)

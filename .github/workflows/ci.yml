@@ -61,24 +61,15 @@ jobs:
           fetch-tags: true
       - name: Setup Python
         uses: ./.github/actions/ci/setup-python
-      - name: Instalar Gitleaks
-        shell: bash
-        run: |
-          GITLEAKS_VERSION="8.24.2"
-          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o /tmp/gitleaks.tar.gz
-          tar -xzf /tmp/gitleaks.tar.gz -C /tmp
-          sudo mv /tmp/gitleaks /usr/local/bin/gitleaks
       - name: Python | Lint
         shell: bash
         run: python app/scripts/operations/clean_workspace.py --area python --stage lint
       - name: Python | Seguranca
         shell: bash
-        run: |
-          python app/scripts/operations/clean_workspace.py --area python --stage security
-          gitleaks detect --source . --verbose --redact
+        run: python app/scripts/operations/clean_workspace.py --area python --stage security
       - name: Python | Testes
         shell: bash
-        run: python app/scripts/operations/clean_workspace.py --area python --stage test --coverage-fail-under 100
+        run: python app/scripts/operations/clean_workspace.py --area python --stage test
       - name: Python | Validate
         shell: bash
         run: python app/scripts/operations/clean_workspace.py --area python --stage validate

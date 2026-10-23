@@ -51,6 +51,7 @@ Layout operacional da PoC OTRS (`app/`, `infra/`, `linters/`, `docs/`).
 ├── docs/
 ├── logs/ (.gitkeep; `otrs-gchat-YYYY-MM-DD.log` no host, ignorado pelo git)
 ├── .github/
+│   ├── workflows.md
 │   ├── workflows/ci.yml
 │   └── actions/{ci,shared}/
 ├── infra/docker/

@@ -18,3 +18,10 @@ runs:
         python -m pip install --upgrade pip
         pip install -r app/requirements.txt -r app/requirements-dev.txt
         pip install -e app
+    - name: Instalar Gitleaks
+      shell: bash
+      run: |
+        GITLEAKS_VERSION="8.24.2"
+        curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" -o /tmp/gitleaks.tar.gz
+        tar -xzf /tmp/gitleaks.tar.gz -C /tmp
+        sudo mv /tmp/gitleaks /usr/local/bin/gitleaks

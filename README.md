@@ -57,10 +57,14 @@ Dependencias:
 
 ```bash
 make app-lint
-make app-test
 make app-security
+make app-test
+make app-validate
+make app-build
 make app-clean
 ```
+
+Comandos por categoria (`app-*` / `python-*`, `docker-*`, `github-*`, `scripts-*` nos estagios `lint`, `security`, `test`/`tests`, `validate`, `build`): consulte `make help` e [docs/devops.md](docs/devops.md).
 
 Cobertura minima: 100%. Commits: Conventional Commits (`linters/commitlint.config.mjs`).
 

@@ -34,6 +34,8 @@ Sem Kubernetes, Terraform, Azure OIDC ou destroy: a PoC sobe via Compose local (
 |----------|---------|-----|
 | [ci.yml](../.github/workflows/ci.yml) | push/PR `main`, manual | CI matriz; release no push `main` |
 
+Documentacao interna de `.github/`: [`.github/workflows.md`](../.github/workflows.md).
+
 ## Composite actions
 
 ```text
@@ -51,25 +53,37 @@ Sem Kubernetes, Terraform, Azure OIDC ou destroy: a PoC sobe via Compose local (
 
 ## Stages crash-first
 
-Em cada area o orquestrador `app/scripts/operations/clean_workspace.py` executa:
+Em cada categoria (`Python`, `Docker`, `GitHub`, `Scripts`), o orquestrador `app/scripts/operations/clean_workspace.py` executa estritamente os 5 estagios obrigatorios na ordem fixa:
 
-`Lint` → `Seguranca` → `Testes` → `Validate` → `Build`
+1. `<Categoria> | Lint`
+2. `<Categoria> | Seguranca`
+3. `<Categoria> | Testes`
+4. `<Categoria> | Validate`
+5. `<Categoria> | Build`
 
 ```bash
-python app/scripts/operations/clean_workspace.py --area python --stage lint
-python app/scripts/operations/clean_workspace.py --area docker --stage build
+python app/scripts/operations/clean_workspace.py --area <python|docker|github|scripts> --stage <lint|security|test|validate|build|clean>
 ```
 
 | Area | Lint | Seguranca | Testes | Validate | Build |
 |------|------|-----------|--------|----------|-------|
-| python | Ruff, mypy, vulture, limite 300 | Bandit, pip-audit (+ Gitleaks no job) | pytest cov 100% | `pip install -e` + import | `python -m build` |
+| python | Ruff, mypy, vulture, limite 300 | Bandit, pip-audit, Gitleaks (`gitleaks detect --source . --verbose --redact`) | pytest cov 100% | `pip install -e` + import | `python -m build` |
 | docker | Hadolint (`infra/docker/.hadolint.yaml`) | Trivy config/fs | `compose config --quiet` (`.env` ou `.env.example`) | arquivos + compose | build da imagem **notifier** |
-| github | actionlint | Gitleaks em `.github` | actionlint | estrutura de actions | diretorios ci/shared |
+| github | actionlint | Gitleaks em `.github` + regex | actionlint | estrutura de actions | diretorios ci/shared |
 | scripts | `bash -n` + `make -n help` | grep de segredos | `make help` | scripts do Makefile | sintaxe shell |
+
+## Comandos manuais no `Makefile`
+
+| Categoria | Lint | Seguranca | Testes | Validate | Build |
+|-----------|------|-----------|--------|----------|-------|
+| Python (App) | `make app-lint` (`python-lint`) | `make app-security` (`python-security`) | `make app-test` / `make app-tests` (`python-test` / `python-tests`) | `make app-validate` (`python-validate`) | `make app-build` (`python-build`) |
+| Docker | `make docker-lint` | `make docker-security` | `make docker-test` / `make docker-tests` | `make docker-validate` | `make docker-build` |
+| GitHub | `make github-lint` | `make github-security` | `make github-test` / `make github-tests` | `make github-validate` | `make github-build` |
+| Scripts | `make scripts-lint` | `make scripts-security` | `make scripts-test` / `make scripts-tests` | `make scripts-validate` | `make scripts-build` |
 
 ## Pre-commit
 
-Espelha a matriz CI (sequencial com `fail_fast`): commitlint + areas Python/Docker/GitHub/Scripts nos stages Lint → Seguranca → Testes → Validate → Build. Detalhes: [linters/README.md](../linters/README.md).
+Espelha a matriz CI (sequencial com `fail_fast: true`): `Commitlint (Conventional Commits)` seguido pelas categorias `Python`, `Docker`, `GitHub` e `Scripts` nos 5 estagios `Lint` → `Seguranca` → `Testes` → `Validate` → `Build`. Detalhes: [linters/README.md](../linters/README.md).
 
 ## Secrets
 

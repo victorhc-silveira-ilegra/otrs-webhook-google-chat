@@ -20,6 +20,7 @@ _REQUIRED_ACTIONS = (
     GITHUB_DIR / "actions" / "ci" / "sync-tags" / "action.yml",
     GITHUB_DIR / "actions" / "shared" / "pipeline-summary" / "action.yml",
     GITHUB_DIR / "workflows" / "ci.yml",
+    GITHUB_DIR / "workflows.md",
 )
 _SECRET_PATTERN = re.compile(
     r"(?i)(api[_-]?key|token|password|secret)\s*[:=]\s*['\"][^'\"]{8,}"

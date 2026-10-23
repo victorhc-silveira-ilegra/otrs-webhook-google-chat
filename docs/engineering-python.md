@@ -51,8 +51,10 @@ Ports sao `typing.Protocol` (sem ABC).
 | Comando | O que roda |
 |---------|------------|
 | `make app-lint` | Ruff, mypy strict, vulture, limite 300 linhas |
-| `make app-test` | pytest-xdist + coverage 100% (branch) |
-| `make app-security` | bandit + pip-audit |
+| `make app-security` | bandit + pip-audit + gitleaks |
+| `make app-test` (`make app-tests`) | pytest-xdist + coverage 100% (branch) |
+| `make app-validate` | `pip install -e` + import smoke |
+| `make app-build` | `python -m build` |
 | `make app-pre-commit-run` | hooks em todos os arquivos |
 
 Orquestrador: `app/scripts/operations/clean_workspace.py` (`--area python|docker|github|scripts` + `--stage`). Detalhes: [devops.md](devops.md).

@@ -21,6 +21,18 @@ flowchart LR
   R --> S[Resumo]
 ```
 
+## Matriz por categoria (5 estagios obrigatorios)
+
+Cada categoria (`Python`, `Docker`, `GitHub`, `Scripts`) executa estritamente:
+
+1. `<Categoria> | Lint`
+2. `<Categoria> | Seguranca`
+3. `<Categoria> | Testes`
+4. `<Categoria> | Validate`
+5. `<Categoria> | Build`
+
+Orquestrador unico: `python app/scripts/operations/clean_workspace.py --area <python|docker|github|scripts> --stage <lint|security|test|validate|build|clean>`.
+
 ## Composite actions
 
 ```text
@@ -39,4 +51,4 @@ flowchart LR
 
 | Secret | Uso |
 |--------|-----|
-| `GITHUB_TOKEN` | Release e Gitleaks |
+| `GITHUB_TOKEN` | Release e sync-tags |
